@@ -1,4 +1,5 @@
-*.vscode
+.vscode
+.clang-format
 
 # Ignore object files
 *.o
