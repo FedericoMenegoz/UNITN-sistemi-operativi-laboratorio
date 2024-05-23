@@ -24,7 +24,7 @@ struct msg_q {
 int open_queue(key_t key);
 void exit_and_signal(int);
 int str_to_int(char *str);
-void perr(char *msg);
+void perr(char *msg, int errno);
 void delete_queue(int queueid);
 
 pid_t ext_pid = 0;
