@@ -5,8 +5,11 @@
 *.out
 
 # Ignore binaries
+# 202106b
 app
+# 202206
 coda
+ext
 
 # Ignore backup files
 *~

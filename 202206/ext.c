@@ -9,7 +9,7 @@
 #define UNBOLD "\e[0m"
 
 int fail = 0, success = 0, pid = 0;
-void handler(int signu, siginfo_t * info, void *) {
+void handler(int signu, siginfo_t * info, void * ptr) {
     pid = info->si_pid;
     if (signu == SIGUSR1) {
         success = 1;

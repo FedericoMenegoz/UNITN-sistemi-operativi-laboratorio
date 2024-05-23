@@ -27,7 +27,7 @@ void perr(char * msg) {
     default_color(STDERR_FILENO);
 }
 
-int str_to_int(char * ptr) {
+int str_to_positive_int(char * ptr) {
     if (strspn(ptr, "0123456789") != strlen(ptr)) {
         return -1;
     } else {

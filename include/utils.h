@@ -20,4 +20,4 @@ void bold(int fd);
 void unbold(int fd);
 
 void perr(char * msg);
-int str_to_int(char * ptr);
+int str_to_positive_int(char * ptr);

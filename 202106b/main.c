@@ -37,7 +37,7 @@ struct msg {
     char msg[MAX_BUFFER];
 } msg_snd, msg_rcv;
 
-int str_to_int(char * str) {
+int str_to_positive_int(char * str) {
     if (strspn(str, "0123456789") == strlen(str)) {
         return atoi(str);
     } else {
@@ -60,7 +60,7 @@ int main(int argc, char * argv[]) {
         printf("Usage: %s <path> <n>.\n", argv[0]);
         exit(ERR_ARGS);
     } else {
-        n = str_to_int(argv[2]);
+        n = str_to_positive_int(argv[2]);
         if (n < 1 || n > CHILDREN_MAX) {
             printf("%sn must be a valid integer from 1 to %d.\n%s", RED, CHILDREN_MAX, DF);
             exit(ERR_ARGS);
