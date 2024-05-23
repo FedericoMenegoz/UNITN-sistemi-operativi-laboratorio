@@ -1,10 +1,16 @@
 SHELL := /bin/bash
 CC := gcc
 CFLAGS := -Wall
+FOLDER := /tmp/info
 
 ALL: app
 
 app: main.c
-	$(CC) $(CFLAGS) $< -o $@
+	@echo "Building app ..."
+	@$(CC) $(CFLAGS) $< -o $@
+	@echo "App builded."
 
-.PHONY: ALL
+.PHONY: clean ALL
+
+clean:
+	rm -r $(FOLDER)
