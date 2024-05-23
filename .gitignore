@@ -3,6 +3,7 @@
 # Ignore object files
 *.o
 *.out
+app
 
 # Ignore backup files
 *~
