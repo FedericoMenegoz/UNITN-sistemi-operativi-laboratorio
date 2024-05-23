@@ -1,0 +1,11 @@
+*.vscode
+
+# Ignore object files
+*.o
+*.out
+
+# Ignore backup files
+*~
+
+# Ignore macOS-specific files
+.DS_Store
