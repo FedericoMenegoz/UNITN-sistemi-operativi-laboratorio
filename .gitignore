@@ -3,7 +3,10 @@
 # Ignore object files
 *.o
 *.out
+
+# Ignore binaries
 app
+coda
 
 # Ignore backup files
 *~
