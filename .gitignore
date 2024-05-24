@@ -12,6 +12,8 @@ app
 coda
 ext
 
+# 202207
+
 # Ignore backup files
 *~
 
