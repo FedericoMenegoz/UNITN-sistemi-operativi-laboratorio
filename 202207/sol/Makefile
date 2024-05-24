@@ -1,24 +1,12 @@
 SHELL := /bin/bash
-
 CC := gcc
-CFLAGS := -Wall -g
+CFLAGS := -Wall -Wextra -Wpedantic
 
 SOURCES := $(wildcard *.c)
-TARGET := $(patsubst %.c, %, $(SOURCES))
-OBJECT := $(patsubst %.c, %.o, $(SOURCES))
+TARGETS := $(patsubst %.c, %, $(filter-out lib.c, $(SOURCES)))
 
-ALL: $(TARGET)
+ALL: $(TARGETS)
 
-%: %.o lib.o
-	$(CC) $(CFLAGS) $^ -o $@
-
-lib.o: lib.c lib.h
-	$(CC) $(CFLAGS) -c lib.c
-
-
-%.o: %.c
-	$(CC) $(CFLAGS) -c $< -o $@
-
-.PHONY: ALL
-
-
+$(TARGETS): %: %.c
+	@echo "Building targets: $@"
+	@$(CC) $(CFLAGS) $^ -o $@ && echo "Built succesfull."

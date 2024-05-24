@@ -1,7 +1,18 @@
 #include <stdio.h>
-#include "lib.h"
+#include <stdlib.h>
+#include <sys/stat.h>
+#include <sys/types.h>
 
-int main(int argc, char * argv[]) {
-    printf("2 + 2 = %d\n", sum(2 + 2));
+#include "lib.c"
+
+int main(int argc, char* argv[]) {
+    int fd;
+    int err;
+    int n = check_parse_args(argc, argv, &err, &fd);
+
+    if (n < 0) {
+        exit(err);
+    }
+
     return 0;
 }
