@@ -1,6 +1,6 @@
 SHELL := /bin/bash
 CC := gcc
-CFLAGS := -Wall
+CFLAGS := -Wall -pthread
 
 TARGET := SignalProxy.out
 
