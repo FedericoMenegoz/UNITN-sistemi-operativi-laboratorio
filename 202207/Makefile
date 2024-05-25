@@ -1,21 +1,35 @@
 SHELL := /bin/bash
+CC := gcc
+CFLAGS := -Wall -pthread
 
-all: sol test
+TARGET := SignalProxy.out
 
-.PHONY: all sol test
 
-test:
-	@$(MAKE) -C test
-	@cp ./test/test test.out
-sol:
-	@$(MAKE) -C sol
+ALL: $(TARGET) $(FILE) processA.out
+	@echo "All built."
 
-clean-target:
-	@$(MAKE) -C sol clean-target
-	@$(MAKE) -C test clean-target
-	@rm test.out
+$(TARGET): main.c
+	@echo "Building SignalProxy.out ..."
+	@$(CC) $(CFLAGS) main.c -o SignalProxy.out
 
-info:
-	@echo "replace your solutions to the '/sol' folder"
-	@echo "type make ..."
-	@echo "run ./test.out to check if they are correct"
+$(FILE):
+	@[[ ! -e $(FILE) ]] && echo "start" >> $(FILE) || echo "$(FILE) exists ..."
+
+clean: 
+	@echo "Removing $(FILE) ..."
+	@[[ -e $(FILE) ]] && rm $(FILE) 
+	@echo "Removing $(TARGET) ..."
+	@[[ -e $(TARGET) ]] && rm $(TARGET) 
+
+
+processA.out: processA.c
+	@$(CC) $(CFLAGS) $< -o $@
+	@echo "$@ built."
+
+commit: 
+ifeq ($(strip $(COMMIT)),)
+	@echo "Error: make commit COMMIT=<commitName>"
+else
+	@git add . && git commit -m $(COMMIT)
+endif
+.PHONY: clean ALL commit
