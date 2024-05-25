@@ -4,6 +4,7 @@ CFLAGS := -Wall -pthread
 
 TARGET := SignalProxy.out
 
+
 ALL: $(TARGET) $(FILE) processA.out
 	@echo "All built."
 
@@ -20,7 +21,14 @@ clean:
 	@echo "Removing $(TARGET) ..."
 	@[[ -e $(TARGET) ]] && rm $(TARGET) 
 
-.PHONY: clean ALL
 
 processA.out: processA.c
 	@$(CC) $(CFLAGS) $< -o $@
+
+commit: 
+ifeq ($(strip $(COMMIT)),)
+	@echo "Error: make commit COMMIT=<commitName>"
+else
+	@git add . && git commit -m $(COMMIT)
+endif
+.PHONY: clean ALL
