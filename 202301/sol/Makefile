@@ -4,7 +4,7 @@ CFLAGS := -Wall
 
 TARGET := SignalProxy.out
 
-ALL: $(TARGET) $(FILE)
+ALL: $(TARGET) $(FILE) processA.out
 	@echo "All built."
 
 $(TARGET): main.c
@@ -21,3 +21,6 @@ clean:
 	@[[ -e $(TARGET) ]] && rm $(TARGET) 
 
 .PHONY: clean ALL
+
+processA.out: processA.c
+	@$(CC) $(CFLAGS) $< -o $@
