@@ -3,10 +3,10 @@ CC := gcc
 CFLAGS := -Wall -pthread
 
 TARGET := SignalProxy.out
+FILE := log.txt
 
-
-ALL: $(TARGET) $(FILE) processA.out
-	@echo "All built."
+ALL: $(TARGET) $(FILE)
+	@echo "$^ built."
 
 $(TARGET): main.c
 	@echo "Building SignalProxy.out ..."
@@ -21,15 +21,10 @@ clean:
 	@echo "Removing $(TARGET) ..."
 	@[[ -e $(TARGET) ]] && rm $(TARGET) 
 
-
-processA.out: processA.c
-	@$(CC) $(CFLAGS) $< -o $@
-	@echo "$@ built."
-
 commit: 
 ifeq ($(strip $(COMMIT)),)
 	@echo "Error: make commit COMMIT=<commitName>"
 else
 	@git add . && git commit -m $(COMMIT)
 endif
-.PHONY: clean ALL
+.PHONY: clean ALL commit
