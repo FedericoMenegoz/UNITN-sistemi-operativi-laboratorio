@@ -18,4 +18,4 @@ clean-target:
 info:
 	@echo "replace your solutions to the '/sol' folder"
 	@echo "type make ..."
-	@echo "run ./test.out"
+	@echo "run ./test.out to check if they are correct"
