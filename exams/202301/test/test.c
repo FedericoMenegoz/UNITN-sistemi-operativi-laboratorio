@@ -6,12 +6,14 @@
 #include <sys/ipc.h>
 #include <sys/msg.h>
 #include <sys/types.h>
+#include <sys/wait.h>
 #include <unistd.h>
 
 #define ERR_ARGS 1
 
 #define RED "\033[0;31m"
 #define GREEN "\033[0;32m"
+#define YELLOW "\033[0;33m"
 #define BLUE "\033[0;34m"
 #define DF "\033[0m"
 #define BOLD "\033[1m"
@@ -103,30 +105,23 @@ int main(int argc, char *argv[]) {
         perror("sigaction");
     }
 
+    printf("%s%sChecking SIGUSR1%s%s\n", YELLOW, BOLD, UNBOLD, DF);
     // Send SIGUSR1 to SignalProxy
     kill(signal_pid, SIGUSR1);
     sleep(1);
 
     // Check return signal
-    if (sig1 == 1 && sig1_pid == signal_pid) {
-        success("SIGUSR1");
-        sig1 = 0;
-    } else {
-        fail("SIGUSR1");
-    }
-
+    check_condition(sig1 == 1 && sig1_pid == signal_pid, "SIGUSR1");
+    
+    printf("%s%sChecking SIGUSR2%s%s\n", YELLOW, BOLD, UNBOLD, DF);
     // Send SIGUSR" to SignalProxy
     kill(signal_pid, SIGUSR2);
     sleep(1);
 
     // Check return signal
-    if (sig2 == 1 && sig2_pid != signal_pid) {
-        success("SIGUSR2");
-        sig2 = 0;
-    } else {
-        fail("SIGUSR2");
-    }
+    check_condition(sig2 == 1 && sig2_pid != signal_pid, "SIGUSR2");
 
+    printf("%s%sChecking message queue.%s%s\n", YELLOW, BOLD, UNBOLD, DF);
     // Send message to the queue
     int key = ftok(path_to_log, 1);
     int queueId = msgget(key, IPC_CREAT | 0666);
@@ -146,20 +141,16 @@ int main(int argc, char *argv[]) {
     }
     sleep(1);
     // Check for SIGALARM
-    if (sigalrm == 1 && al_pid == signal_pid) {
-        success("SIGALARM");
-    } else {
-        fail("SIGALARM");
-    }
+    check_condition(sigalrm == 1 && al_pid == signal_pid, "SIGALARM");
     // Wait signal to write everything on log file
-    sleep(3);
+    sleep(5);
     // Simulate a ctrl-c
     kill(signal_pid, SIGINT);
     sleep(3);
     // Terminate SignalProxy
     kill(signal_pid, SIGTERM);
     wait(NULL);
-
+    printf("%s%sChecking %s ...%s%s\n",YELLOW, BOLD, path_to_log, UNBOLD, DF);
     // Check for file log
     FILE *f = fopen(path_to_log, "r");
     char buffer[MAX_LOG];
@@ -167,11 +158,9 @@ int main(int argc, char *argv[]) {
     check_condition(strcmp(buffer, "start") == 0, "start=start");
     int pid_to_check, sig_to_check;
     fscanf(f, "#%d-#%d\n", &pid_to_check, &sig_to_check);
-    printf("%d %d\n", sig_to_check, pid_to_check);
     check_condition(pid_to_check == getpid() && sig_to_check == SIGUSR1,
                     "first signal");
     fscanf(f, "#%d-#%d\n", &pid_to_check, &sig_to_check);
-    printf("%d %d\n", sig_to_check, pid_to_check);
     check_condition(pid_to_check == getpid() && sig_to_check == SIGUSR2,
                     "second signal");
     fscanf(f, "%4s\n", buffer);

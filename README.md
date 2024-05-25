@@ -9,25 +9,25 @@ My solutions to past exams. For some of them, I have prepared a simple test to c
 - `make`
 - `./test.out`
 
-### [June 2021](202106b/) 
+### [June 2021](exams/202106b/) 
 - Makefile
 - File operation
 - Message Queue
 - Signal
 - [ ] test
 
-### [June 2022](202206/)
+### [June 2022](exams/202206/)
 - Makfile
 - Message Queue
 - Signal
 - [ ] test
 
-### [July 2022](202207/)
+### [July 2022](exams/202207/)
 - Makefile
 - FIFO
 - [x] test
 
-### [January 2023](202301/)
+### [January 2023](exams/202301/)
 - Makefile
 - File operation
 - Signal
