@@ -25,6 +25,6 @@ commit:
 ifeq ($(strip $(COMMIT)),)
 	@echo "Error: make commit COMMIT=<commitName>"
 else
-	@git add . && git commit -m $(COMMIT)
+	@git add . && git commit -m "202301 - $(COMMIT)"
 endif
 .PHONY: clean ALL commit
