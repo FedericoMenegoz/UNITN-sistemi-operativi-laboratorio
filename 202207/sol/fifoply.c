@@ -6,7 +6,7 @@
 
 #include "lib.c"
 
-void sorted_insert(char c, int size, char * array);
+void sorted_insert(char c, int size, char* array);
 
 int main(int argc, char* argv[]) {
     int err, fd;
@@ -15,7 +15,7 @@ int main(int argc, char* argv[]) {
     if (n < 0) {
         exit(err);
     }
-    
+
     fd = open_fifo(argv[1], &err, O_RDONLY);
     if (fd == -1) {
         exit(err);
@@ -23,14 +23,14 @@ int main(int argc, char* argv[]) {
 
     err = fifo_to_buffer(fd, &n);
 
-    char letters [MAX_BUFFER];
-    char numbers [MAX_BUFFER];
+    char letters[MAX_BUFFER];
+    char numbers[MAX_BUFFER];
     int l_count = 0, n_count = 0;
     for (int i = 0; i < n; i++) {
         if (buffer[i] >= 'A' && buffer[i] <= 'Z') {
             sorted_insert(buffer[i], l_count++, letters);
         } else if (buffer[i] >= '0' && buffer[i] <= '9') {
-            numbers[n_count++] = buffer[i];
+            sorted_insert(buffer[i], n_count++, numbers);
         } else {
             printf("%sError: invalid char %c%s\n", RED, buffer[i], DF);
         }
@@ -50,9 +50,8 @@ int main(int argc, char* argv[]) {
     return err;
 }
 
-
-void sorted_insert(char c, int size, char * array) {
-    int i = 0; 
+void sorted_insert(char c, int size, char* array) {
+    int i = 0;
     while (c < array[i]) i++;
 
     if (i == size) {
@@ -66,4 +65,3 @@ void sorted_insert(char c, int size, char * array) {
         }
     }
 }
-

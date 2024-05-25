@@ -15,7 +15,7 @@ int main(int argc, char* argv[]) {
     if (n < 0) {
         exit(err);
     }
-    
+
     fd = open_fifo(argv[1], &err, O_RDONLY);
     if (fd == -1) {
         exit(err);
@@ -23,7 +23,7 @@ int main(int argc, char* argv[]) {
 
     err = fifo_to_buffer(fd, &n);
 
-    for(int i = 0; i < n; i++) {
+    for (int i = 0; i < n; i++) {
         printf("%c\n", buffer[i]);
     }
 

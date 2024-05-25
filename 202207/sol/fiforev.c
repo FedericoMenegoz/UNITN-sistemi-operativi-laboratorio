@@ -6,7 +6,6 @@
 
 #include "lib.c"
 
-
 int main(int argc, char* argv[]) {
     int err, fd;
     int n = check_parse_args(argc, argv, &err);
@@ -14,7 +13,7 @@ int main(int argc, char* argv[]) {
     if (n < 0) {
         exit(err);
     }
-    
+
     fd = open_fifo(argv[1], &err, O_RDONLY);
     if (fd == -1) {
         exit(err);

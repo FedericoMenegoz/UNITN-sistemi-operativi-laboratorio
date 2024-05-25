@@ -15,14 +15,13 @@ int main(int argc, char* argv[]) {
     if (n < 0) {
         exit(err);
     }
-    
+
     fd = open_fifo(argv[1], &err, O_RDONLY);
     if (fd == -1) {
         exit(err);
     }
-    // printf("N: %d\n", n);
     err = 1;
-    char c; 
+    char c;
     int count = 1;
     while (1) {
         int bytes = read(fd, &c, sizeof(char));
@@ -39,7 +38,7 @@ int main(int argc, char* argv[]) {
         }
         count++;
     }
-   
+
     close(fd);
     return err;
 }
