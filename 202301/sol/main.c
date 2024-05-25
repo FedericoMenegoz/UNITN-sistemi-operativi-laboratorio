@@ -2,20 +2,29 @@
 #include <stdlib.h>
 #include <sys/types.h>
 #include <sys/stat.h>
+#include <sys/ipc.h>
+#include <sys/msg.h>
 #include <fcntl.h>
 #include <signal.h>
 #include <unistd.h>
 #include <pthread.h>
 #include <string.h>
+#include <errno.h>
 
 #define ERR_ARGS 1
 #define ERR_FILE 2
-
+#define MAX_THREADS 10
 
 #define MAX_LOG 16 // # <pid:8> -# <signu:2> 
 
-int sig1 = 0, sig2 = 0, ctrlC = 0;
+struct msgq {
+    long type;
+    char text[MAX_LOG];
+} msg_rcv;
+
+int sig1 = 0, sig2 = 0, ctrlC = 0, terminate = 0;
 pid_t sig1_pid = 0, sig2_pid = 0;
+
 pthread_t thread;
 
 int fd_log = 0;
@@ -44,6 +53,9 @@ void handler(int signu, siginfo_t * info, void * context) {
     if (signu == SIGINT) {
         ctrlC = 1;
     }
+    if (signu == SIGTERM) {
+        terminate = 1;
+    }
 }
 
 int main(int argc, char * argv[]) {
@@ -67,6 +79,9 @@ int main(int argc, char * argv[]) {
     if (sigaction(SIGINT, &sa, NULL) == -1) {
         perror("sigaction");
     }
+    if (sigaction(SIGTERM, &sa, NULL) == -1) {
+        perror("sigaction");
+    }
 
     fd_log = open(argv[1], O_WRONLY | O_APPEND, 0666);
 
@@ -75,12 +90,24 @@ int main(int argc, char * argv[]) {
         exit(ERR_FILE);
     }
 
+    int key = ftok(argv[1], 1);
+
+    if (key == -1) {
+        perror("ftok");
+    }
+
+    int queueId = msgget(key, IPC_CREAT | 0666);
+
+    if (queueId == -1) {
+        perror("msgget");
+    }
+
     while(1) {
         if (sig1) {
             printf("Received sig1 from %d\n", sig1_pid);
             kill(sig1_pid, SIGUSR1);
-            sig1 = 0;
             write_to_log(sig1_pid, SIGUSR1);
+            sig1 = 0;
         }
         if (sig2) {
             printf("Received sig2 from %d\n", sig2_pid);
@@ -98,7 +125,25 @@ int main(int argc, char * argv[]) {
             }
             ctrlC = 0;
         }
-        pause();
+        int bytes = msgrcv(queueId, &msg_rcv, sizeof(msg_rcv.text), 0, IPC_NOWAIT); 
+        if ( bytes == -1) {
+            if (errno != ENOMSG) {
+                perror("msgrcv");
+            }
+        } else if (bytes > 0) {
+            pid_t pid = atoi(msg_rcv.text + 1);
+            kill(pid, SIGALRM);
+        }
+        if (terminate) {
+            printf("[%d] ... TERMINATING ... \n", getpid());
+            close(fd_log);
+            if (msgctl(queueId, IPC_RMID, NULL) == -1) {
+                perror("msgctl");
+            }
+            pthread_join(thread, NULL);
+            break;
+        }
+
     }
 }
 

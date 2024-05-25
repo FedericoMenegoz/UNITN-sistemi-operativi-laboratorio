@@ -24,6 +24,7 @@ clean:
 
 processA.out: processA.c
 	@$(CC) $(CFLAGS) $< -o $@
+	@echo "$@ built."
 
 commit: 
 ifeq ($(strip $(COMMIT)),)
