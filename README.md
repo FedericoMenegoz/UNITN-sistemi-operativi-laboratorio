@@ -17,7 +17,7 @@
 - FIFO
 
 #### Test your solutions
+- replace your solution in 202207/sol/ 
 - `cd 202207`
-- replace your solution in sol/ folder
 - `make`
 - `./test.out`
