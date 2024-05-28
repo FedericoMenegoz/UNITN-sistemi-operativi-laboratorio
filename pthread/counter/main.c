@@ -6,10 +6,10 @@
 int counter = 0;
 pthread_mutex_t lock;
 pthread_t threads[MAX_THREADS];
-int id [MAX_THREADS];
+int id[MAX_THREADS];
 
-void * increase_counter(__attribute__((unused)) void * arg) {
-    int i = *(int *) arg;
+void *increase_counter(__attribute__((unused)) void *arg) {
+    int i = *(int *)arg;
     pthread_mutex_lock(&lock);
     counter++;
     printf("Thread %d -> counter %d\n", i, counter);

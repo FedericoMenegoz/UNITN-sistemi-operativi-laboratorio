@@ -2,8 +2,8 @@
 #include <pthread.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <unistd.h>
 #include <time.h>
+#include <unistd.h>
 
 #define BLUE "\033[0;34m"
 #define GREEN "\033[0;32m"
@@ -12,10 +12,7 @@
 #define THRESH 15
 #define TIMES 20
 int counter = 0;
-struct timespec tim1 = {
-    .tv_sec = 0,
-    .tv_nsec = 500000000
-}, tim2;
+struct timespec tim1 = {.tv_sec = 0, .tv_nsec = 500000000}, tim2;
 
 pthread_mutex_t lock_counter;
 pthread_cond_t cond_counter;
@@ -23,7 +20,7 @@ pthread_cond_t cond_counter;
 void *threshold_reached(void *args) {
     int id = *(int *)args;
     pthread_mutex_lock(&lock_counter);
-    while(counter < THRESH) {
+    while (counter < THRESH) {
         pthread_cond_wait(&cond_counter, &lock_counter);
     }
     pthread_mutex_unlock(&lock_counter);
@@ -36,9 +33,9 @@ void *increment_and_tell(void *args) {
     for (int i = 0; i < TIMES; i++) {
         pthread_mutex_lock(&lock_counter);
         if (id == 2) {
-            printf("%s[%d] %d%s\n",BLUE, id, ++counter, DF);
+            printf("%s[%d] %d%s\n", BLUE, id, ++counter, DF);
         } else {
-            printf("%s[%d] %d%s\n",GREEN, id, ++counter, DF);
+            printf("%s[%d] %d%s\n", GREEN, id, ++counter, DF);
         }
         if (counter > THRESH) {
             pthread_cond_signal(&cond_counter);
@@ -50,9 +47,6 @@ void *increment_and_tell(void *args) {
 }
 
 int main(void) {
-
-
-    
     pthread_t th[3];
     int id_0 = 0, id_1 = 1, id_2 = 2;
 

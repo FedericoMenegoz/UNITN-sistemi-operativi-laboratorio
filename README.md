@@ -51,3 +51,12 @@ If the buffer is not full, it adds the character 'o' to the end; otherwise, it w
 Thread 2 behaves exactly like thread 1, but writes 'x' instead of 'o'.
 Thread 3 (consumer) performs the following operation 2*LEN times, each time in mutual exclusion: if the buffer is not empty, it removes a character from the head of the buffer and prints it; otherwise, it waits for the buffer to become non-empty.
 Try to solve the problem using classical semaphores and/or condition variables.
+
+### [Condition Variable](phtread/condition_variable)
+Write a C program that uses three threads to manage a global integer variable count, initialized to zero.
+The first thread waits for the value of count to become greater than or equal to THRESH=15, and when this happens, it prints the message "Threshold reached".
+The other two threads perform the following operations 20 times in mutual exclusion:
+1. Increment the count variable.
+2. Print their own index and the updated value of count.
+3. Appropriately notify the first thread.
+The program must be implemented using condition variables.
