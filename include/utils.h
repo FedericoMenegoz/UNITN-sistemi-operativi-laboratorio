@@ -12,7 +12,6 @@
 #define BOLD "\e[1m"
 #define UNBOLD "\e[m"
 
-#endif
 
 void red_color(int fd);
 void default_color(int fd);
@@ -21,3 +20,5 @@ void unbold(int fd);
 
 void perr(char * msg);
 int str_to_positive_int(char * ptr);
+
+#endif
