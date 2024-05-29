@@ -67,3 +67,5 @@ The other two threads perform the following operations 20 times in mutual exclus
 
 
 The program must be implemented using condition variables.
+
+## [BASH Exercises](/bash/README.md)

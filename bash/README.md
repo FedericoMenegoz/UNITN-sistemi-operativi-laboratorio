@@ -1,4 +1,4 @@
-# [Esercizio 1](ps_monitor.sh) 
+# [Exercise 1](ps_monitor.sh) 
 
 Create a script `ps_monitor.sh <N>`:
 - if no argument are passed it should show the processes of all users (including those without a controlling terminal) with information on the username and start time;
@@ -6,7 +6,7 @@ Create a script `ps_monitor.sh <N>`:
 
 __SUGGESTION__: use `ps` command
 
-# [Esercizio 2](lines_counter.sh)
+# [Exercise 2](lines_counter.sh)
 
 Create a script that accept two args with the following sintax:\
 `./lines_counter.sh <directory> [up|down]`\
@@ -16,7 +16,7 @@ __NOTES__:
 - check if first argument is a directory
 - check if second argument is 'up' or 'down'
 
-# [Esercizio 3](backup.sh)
+# [Exercise 3](backup.sh)
 
 Create a script as follow: \
 `./backup.sh <name> <backupName>` \
