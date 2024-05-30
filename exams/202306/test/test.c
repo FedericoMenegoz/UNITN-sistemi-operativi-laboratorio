@@ -193,6 +193,7 @@ int main(void) {
         perror("writing to buffer");
         exit(1);
     }
+    // Writing WORDS content commands as queue and as fifo
     int messages = sizeof(WORDS) / sizeof(char *);
     for (int i = 0; i < messages; i++) {
         snprintf(buffer, MAX_LINE, "queue %d %s\nfifo %s %s\n", i + 1, WORDS[i],
@@ -204,14 +205,14 @@ int main(void) {
     }
     close(file);
 
-    // Running the solution program
+    // Running solution
     program_pid = fork();
     if (program_pid == -1) {
         perror("fork");
         exit(1);
     } else if (program_pid == 0) {
         if (execl(PROGRAM, PROGRAM, CMD_FILE, NULL) == -1) {
-            perror("Running solution program");
+            perror("Running solution");
             exit(2);
         }
     }
