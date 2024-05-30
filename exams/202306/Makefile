@@ -17,7 +17,7 @@ info:
 	@echo "************************************************************"
 	@echo ""
 	@echo "1. Replace your solutions to the '/sol' folder"
-	@echo "2. make FILE=/tmp/esame202306_cmd "
+	@echo "2. make FILE=../test/esame202306_cmd "
 	@echo "3. ./test.out "
 	@echo ""
 	@echo "make clean-target (remove binaries)"
