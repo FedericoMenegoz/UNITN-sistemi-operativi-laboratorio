@@ -1,0 +1,16 @@
+kill 10 6594
+kill 12 6594
+queue 1 I
+fifo ./test/esame202306_fifo I
+queue 2 won't
+fifo ./test/esame202306_fifo won't
+queue 3 pass
+fifo ./test/esame202306_fifo pass
+queue 4 operating
+fifo ./test/esame202306_fifo operating
+queue 5 system
+fifo ./test/esame202306_fifo system
+queue 6 lab
+fifo ./test/esame202306_fifo lab
+queue 7 exam!
+fifo ./test/esame202306_fifo exam!

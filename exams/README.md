@@ -12,18 +12,18 @@ My solutions to past exams. For some of them, I have prepared a simple test to c
 - File operation
 - Message Queue
 - Signal
-- [ ] test
+- [ ] ~~test~~
 
 ## [June 2022](202206/)
 - Makfile
 - Message Queue
 - Signal
-- [ ] test
+- [ ] ~~test~~
 
 ## [July 2022](202207/)
 - Makefile
 - FIFO
-- [x] test
+- [x] __test__
 
 ## [January 2023](202301/)
 - Makefile
@@ -31,4 +31,13 @@ My solutions to past exams. For some of them, I have prepared a simple test to c
 - Signal
 - Pthread
 - Bash
-- [x] test
+- [x] __test__
+
+## [June 2023](202306/)
+- Makefile
+- Signal handling
+- FIFO
+- Message Queue
+- Pthreads
+- Bash
+- [x] __test__
