@@ -6,6 +6,7 @@
 #include <sys/stat.h>
 #include <sys/msg.h>
 #include <sys/ipc.h>
+#include <sys/wait.h>
 #include <fcntl.h>
 #include <unistd.h>
 #include <error.h>
@@ -102,7 +103,11 @@ int main(int argc, char * argv[]) {
     if (queueId == -1) {
         perror("msgget");
     }
-    
+    // Setting master as a group leader
+    if (setpgid(0,0) == -1) {
+        perror("setpgid");
+        exit(1);
+    }
     // Creating sigaction for workers
     struct sigaction act1;
     act1.sa_sigaction = workers_handler;
@@ -122,6 +127,7 @@ int main(int argc, char * argv[]) {
             sigaction(SIGUSR1, &act1, NULL);
             sigaction(SIGUSR2, &act2, NULL);
             sigaction(SIGINT, &act2, NULL);
+            sigaction(SIGTERM, &act2, NULL);
             printf("%s[%d] WORKER%s\n", BLUE, getpid(), DF);
             kill(pid, SIGTERM);
             break; 
@@ -170,6 +176,7 @@ int main(int argc, char * argv[]) {
         }
         if (terminate) {
             printf("%s[%d] Child terminating...%s\n", BLUE, getpid(), DF);
+            break;
         }
         pause();
     }
@@ -189,6 +196,14 @@ int main(int argc, char * argv[]) {
             printf("%s[%d]Terminating children.%s\n", GREEN, getpid(), DF);
             kill(-master_pid, SIGTERM);
             break;          
+        }
+        if (terminate) {
+            printf("%s[%d] Killing all children%s\n", GREEN, getpid(), DF);
+            if (kill(-getpid(), SIGTERM)==-1) {
+                perror("kill");
+            }
+            while(wait(NULL) > 0);
+            break;
         }
         pause();
     }
