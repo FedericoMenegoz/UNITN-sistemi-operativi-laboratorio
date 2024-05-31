@@ -5,9 +5,14 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
+#include <unistd.h>
 
 
 #define ERR_ARGS 1
+
+#define GREEN "\033[0;32m"
+#define BLUE "\033[0;34m"
+#define DF "\033[0m"
 
 int main(int argc, char * argv[]) {
     int n;
@@ -39,6 +44,35 @@ int main(int argc, char * argv[]) {
             fprintf(stderr, "File path does not exist.\n");
             exit(ERR_ARGS);
         }
+    }
+
+    printf("%s[%d] MASTER%s\n", GREEN, getpid(), DF);
+    pid_t * workers = malloc(n*sizeof(pid_t));
+    pid_t fork_pid;
+    // Workers creation
+    for (int i = 0; i < n; i++) {
+        fork_pid = fork();
+        // If child break the loop
+        if (fork_pid == 0) {
+            printf("%s[%d] WORKER%s\n", BLUE, getpid(), DF);
+            kill(pid, SIGTERM);
+            break; 
+        } 
+        // Save child pid into workers
+        else {
+            workers[i] = fork_pid;
+            // To avoid all the SIGTERM to collide together
+            usleep(50000);
+        }
+    }
+
+    // Worker process
+    while (!fork_pid) {
+        pause();
+    }
+    // Master process
+    while(fork_pid) {
+        pause();
     }
     return 0;
 }
