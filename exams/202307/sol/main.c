@@ -4,20 +4,31 @@
 #include <signal.h>
 #include <sys/types.h>
 #include <sys/stat.h>
+#include <sys/msg.h>
+#include <sys/ipc.h>
 #include <fcntl.h>
 #include <unistd.h>
+#include <error.h>
 
 
 #define ERR_ARGS 1
+
+#define MAX_BUFFER 256
 
 #define GREEN "\033[0;32m"
 #define BLUE "\033[0;34m"
 #define DF "\033[0m"
 
 // flags
-int sig1 = 0, sig2 = 0;
+int sig1 = 0, sig2 = 0, transfer_queue = 0, terminate = 0;
 // pids
 int sig1_pid, sig2_pid;
+// queue
+int key, queueId;
+struct msg_buf {
+    long type;
+    char mtext[MAX_BUFFER];
+} msg_snd;
 
 void workers_handler(int signu, siginfo_t *info,__attribute__((unused)) void *ucontext) {
     if(signu == SIGUSR1) {
@@ -28,10 +39,26 @@ void workers_handler(int signu, siginfo_t *info,__attribute__((unused)) void *uc
         sig2 = 1;
         sig2_pid = info->si_pid;
     }
+    if (signu == SIGINT) {
+        transfer_queue = 1;
+    }
+    if (signu == SIGTERM) {
+        terminate = 1;
+    }
+}
+
+void master_handler(int signu) {
+    if(signu == SIGWINCH) {
+        transfer_queue = 1;
+    }
+    if(signu == SIGTERM) {
+        terminate = 1;
+    }
 }
 
 int main(int argc, char * argv[]) {
     int n;
+    FILE *fd;
     pid_t pid;
     // Arguments checks.
     if (argc != 4) {
@@ -56,19 +83,25 @@ int main(int argc, char * argv[]) {
             exit(ERR_ARGS);
         }
         // Checking if path exists
-        if (open(argv[2], 0) == -1) {
+        if ((fd = fopen(argv[2], "r")) == NULL) {
             fprintf(stderr, "File path does not exist.\n");
             exit(ERR_ARGS);
         }
     }
-
-    printf("%s[%d] MASTER%s\n", GREEN, getpid(), DF);
+    int master_pid = getpid();
+    printf("%s[%d] MASTER%s\n", GREEN, master_pid, DF);
     pid_t * workers = malloc(n*sizeof(pid_t));
     pid_t fork_pid;
 
-    // // Make the master ignore SIGUSR1 SIGUSR2
-    // signal(SIGUSR1, SIG_IGN);
-    // signal(SIGUSR2, SIG_IGN);
+    // Create queue
+    key = ftok(argv[2], master_pid);
+    if (key == -1) {
+        perror("ftok");
+    }
+    queueId = msgget(key, IPC_CREAT | 0777);
+    if (queueId == -1) {
+        perror("msgget");
+    }
     
     // Creating sigaction for workers
     struct sigaction act1;
@@ -88,6 +121,7 @@ int main(int argc, char * argv[]) {
         if (fork_pid == 0) {
             sigaction(SIGUSR1, &act1, NULL);
             sigaction(SIGUSR2, &act2, NULL);
+            sigaction(SIGINT, &act2, NULL);
             printf("%s[%d] WORKER%s\n", BLUE, getpid(), DF);
             kill(pid, SIGTERM);
             break; 
@@ -112,10 +146,50 @@ int main(int argc, char * argv[]) {
             kill(sig2_pid, SIGUSR2);
             sig2 = 0;
         }
+        if (transfer_queue) {
+
+            fgets(msg_snd.mtext, MAX_BUFFER, fd);
+            if (feof(fd)) {
+                kill(master_pid, SIGTERM);
+            } 
+            else {
+                // Important to flush
+                fflush(fd);
+                int len = strlen(msg_snd.mtext)-1;
+                // fgets write also new line
+                msg_snd.mtext[len] = 0;
+                msg_snd.type = getpid();
+                printf("%s[%d] Just read %s %s\n", BLUE, getpid(), msg_snd.mtext, DF);
+
+                if (msgsnd(queueId, &msg_snd, sizeof(msg_snd.mtext), 0) == -1) {
+                    perror("msgsnd");
+                }
+            }
+
+            transfer_queue = 0;
+        }
+        if (terminate) {
+            printf("%s[%d] Child terminating...%s\n", BLUE, getpid(), DF);
+        }
         pause();
+    }
+    if (fork_pid) {
+        signal(SIGWINCH, master_handler);
+        signal(SIGTERM, master_handler);
     }
     // Master process
     while(fork_pid) {
+        if (transfer_queue) {
+            int i = 0;
+            while(!terminate) {
+                i = (i+1)%n;
+                kill(workers[i], SIGINT);
+                sleep(1);
+            }
+            printf("%s[%d]Terminating children.%s\n", GREEN, getpid(), DF);
+            kill(-master_pid, SIGTERM);
+            break;          
+        }
         pause();
     }
     return 0;
