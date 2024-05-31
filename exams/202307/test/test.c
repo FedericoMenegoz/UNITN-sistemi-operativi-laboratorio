@@ -36,9 +36,9 @@
 #define LOG_ERR "./test/log_err.txt"
 #define NOT_EXIST "./test/dir/dir/not_exist"
 
-const char *WORDS[] = {"Passing", "operating",
-                       "system", "is",   "like", "getting", "a", "Roman", "to", "cook", "carbonara", "with", "cream", "and", "ham!"};
-
+const char *WORDS[] = {"Passing",   "operating", "system", "is",  "like",
+                       "getting",   "a",         "Roman",  "to",  "cook",
+                       "carbonara", "with",      "cream",  "and", "ham!"};
 
 void success(char *msg) {
     printf("%s%s%s SUCCESS ! %s%s\n", BOLD, msg, GREEN, UNBOLD, DF);
@@ -54,30 +54,29 @@ void evaluate(char *msg, int passed) {
     }
 }
 
-
-int task1_checking_args();
-int task2_create_workers();
-int task3_handling_sigusr1_2();
+int task1_checking_args(void);
+int task2_create_workers(void);
+int task3_handling_sigusr1_2(void);
 
 int main(void) {
     int score = 0;
     remove(LOG_ERR);
     int tasks[7];
- 
+
     tasks[0] = task1_checking_args();
     evaluate("TASK 1 (arguments checking)", tasks[0]);
 
     tasks[1] = task2_create_workers();
     evaluate("TASK 2 (creating )", tasks[1]);
-    
+
     tasks[2] = task3_handling_sigusr1_2();
     evaluate("TASK 3 (handling SIGUSR1-2)", tasks[2]);
-    
+
     remove(LOG_ERR);
     return 0;
 }
 
-int task1_checking_args() {
+int task1_checking_args(void) {
     int pid_fork, first_fork, status, bytes, offset = 0;
 
     printf("[%d] Test program\n", getpid());
@@ -97,10 +96,10 @@ int task1_checking_args() {
         exit(-1);
     }
     wait(&status);
-    char buffer[256];
+    char buffer[MAX_BUFFER];
     lseek(logerr_fd, 0, SEEK_SET);
     bytes = read(logerr_fd, buffer, 256);
-    buffer[bytes-1] = 0;
+    buffer[bytes - 1] = 0;
     offset += bytes;
     if (WEXITSTATUS(status) == 0 || bytes == 0) {
         return 0;
@@ -109,7 +108,8 @@ int task1_checking_args() {
     // wrong n
     pid_fork = fork();
     if (pid_fork == 0) {
-        if (execl(PROGRAM, PROGRAM, "12", "bubusettete", "some pid", NULL) == -1) {
+        if (execl(PROGRAM, PROGRAM, "12", "bubusettete", "some pid", NULL) ==
+            -1) {
             perror("execl");
         }
         exit(-1);
@@ -117,7 +117,7 @@ int task1_checking_args() {
     wait(&status);
     lseek(logerr_fd, offset, SEEK_SET);
     bytes = read(logerr_fd, buffer, 256);
-    buffer[bytes-1] = 0;
+    buffer[bytes - 1] = 0;
     offset += bytes;
     if (WEXITSTATUS(status) == 0 || bytes == 0) {
         return 0;
@@ -134,7 +134,7 @@ int task1_checking_args() {
     wait(&status);
     lseek(logerr_fd, offset, SEEK_SET);
     bytes = read(logerr_fd, buffer, 256);
-    buffer[bytes-1] = 0;
+    buffer[bytes - 1] = 0;
     offset += bytes;
     if (WEXITSTATUS(status) == 0 || bytes == 0) {
         return 0;
@@ -152,7 +152,7 @@ int task1_checking_args() {
     wait(&status);
     lseek(logerr_fd, offset, SEEK_SET);
     bytes = read(logerr_fd, buffer, 256);
-    buffer[bytes-1] = 0;
+    buffer[bytes - 1] = 0;
     offset += bytes;
     if (WEXITSTATUS(status) == 0 || bytes == 0) {
         return 0;
@@ -166,7 +166,7 @@ int task1_checking_args() {
         }
     }
     snprintf(buffer, MAX_BUFFER, "%d", signal_receiver_pid);
-    
+
     pid_fork = fork();
 
     if (pid_fork == 0) {
@@ -181,26 +181,26 @@ int task1_checking_args() {
     wait(&status);
     lseek(logerr_fd, offset, SEEK_SET);
     bytes = read(logerr_fd, buffer, 256);
-    buffer[bytes-1] = 0;
+    buffer[bytes - 1] = 0;
     offset += bytes;
     if (WEXITSTATUS(status) != 0) {
         return 0;
     }
-    
+
     close(logerr_fd);
     dup2(stderr_fd, STDERR_FILENO);
     // All good!
     return TASK1;
 }
 
-int task2_create_workers() {
+int task2_create_workers(void) {
     int signal_receiver_pid, program_pid, status;
-    char * N = "10";
+    char *N = "10";
     char buffer[MAX_BUFFER];
-    signal_receiver_pid = fork();   
+    signal_receiver_pid = fork();
 
     if (signal_receiver_pid == 0) {
-        if (execl(SIG_REC, SIG_REC, N, NULL) ==-1) {
+        if (execl(SIG_REC, SIG_REC, N, NULL) == -1) {
             perror("execl");
         }
     }
@@ -230,7 +230,8 @@ int task3_sig1 = 0, task3_sig2 = 0, worker_counter = 0;
 #define N_T3 3
 pid_t workers_t3[N_T3];
 
-void handler_task3(int signu, siginfo_t *info, __attribute__ ((unused)) void* ucontext) {
+void handler_task3(int signu, siginfo_t *info,
+                   __attribute__((unused)) void *ucontext) {
     if (signu == SIGUSR1) {
         task3_sig1 = 1;
     }
@@ -240,17 +241,16 @@ void handler_task3(int signu, siginfo_t *info, __attribute__ ((unused)) void* uc
     if (signu == SIGTERM) {
         workers_t3[worker_counter++] = info->si_pid;
     }
-
 }
 
-int task3_handling_sigusr1_2() {
+int task3_handling_sigusr1_2(void) {
     int program_pid;
     char buffer[MAX_BUFFER];
     struct sigaction act;
     act.sa_flags = SA_SIGINFO;
     act.sa_sigaction = handler_task3;
     sigemptyset(&act.sa_mask);
-    
+
     sigaction(SIGUSR1, &act, NULL);
     sigaction(SIGTERM, &act, NULL);
     sigaction(SIGUSR2, &act, NULL);
@@ -267,23 +267,24 @@ int task3_handling_sigusr1_2() {
     for (int i = 0; i < N_T3; i++) {
         kill(workers_t3[i], SIGUSR1);
         usleep(500000);
-        if(!task3_sig1) {
+        if (!task3_sig1) {
             return 0;
         }
         task3_sig1 = 0;
         kill(workers_t3[i], SIGUSR2);
         usleep(500000);
-        if(!task3_sig2) {
+        if (!task3_sig2) {
             return 0;
         }
         kill(workers_t3[i], SIGUSR1);
         usleep(500000);
-        if(task3_sig1) {
+        if (task3_sig1) {
             return 0;
         }
-        printf("%s[%d] Pid %d responded correctly%s\n", BOLD, getpid(), workers_t3[i], UNBOLD);
+        printf("%s[%d] Pid %d responded correctly%s\n", BOLD, getpid(),
+               workers_t3[i], UNBOLD);
     }
     kill(-program_pid, SIGTERM);
-    while(wait(NULL)>0);
+    while (wait(NULL) > 0);
     return TASK3;
 }

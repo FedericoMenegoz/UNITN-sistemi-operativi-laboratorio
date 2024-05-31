@@ -1,14 +1,15 @@
+#include <signal.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
-#include <signal.h>
 
 #define YELLOW "\033[0;33m"
 #define DF "\033[0m"
 
-
-int sig1 = 0, sig2 = 0, sig_term = 0, sig_int = 0, pid_sigint, pid_sig1 = 0, pid_sig2 = 0, pid_sigt = 0;
-void handler(int signu, siginfo_t * info, __attribute__((unused)) void * ucontext) {
+int sig1 = 0, sig2 = 0, sig_term = 0, sig_int = 0, pid_sigint, pid_sig1 = 0,
+    pid_sig2 = 0, pid_sigt = 0;
+void handler(int signu, siginfo_t *info,
+             __attribute__((unused)) void *ucontext) {
     if (signu == SIGUSR1) {
         sig1 = 1;
         pid_sig1 = info->si_pid;
@@ -29,7 +30,7 @@ void handler(int signu, siginfo_t * info, __attribute__((unused)) void * ucontex
 
 int main(int argc, char *argv[]) {
     int count = 0;
-    if(argc == 2) {
+    if (argc == 2) {
         count = atoi(argv[1]);
     }
     printf("%s[%d] Signal Receiver%s\n", YELLOW, getpid(), DF);
@@ -56,20 +57,23 @@ int main(int argc, char *argv[]) {
         exit(1);
     }
 
-    while(1) {
+    while (1) {
         if (sig1) {
-            printf("%s[%d] Received SIGUSR1 from %d.%s\n", YELLOW, getpid(), pid_sig1, DF);
+            printf("%s[%d] Received SIGUSR1 from %d.%s\n", YELLOW, getpid(),
+                   pid_sig1, DF);
             kill(pid_sig1, SIGUSR1);
             sig1 = 0;
         }
         if (sig2) {
-            printf("%s[%d] Received SIGUSR2 from %d.%s\n", YELLOW, getpid(), pid_sig2, DF);
+            printf("%s[%d] Received SIGUSR2 from %d.%s\n", YELLOW, getpid(),
+                   pid_sig2, DF);
             kill(pid_sig2, SIGUSR1);
             sig2 = 0;
         }
         if (sig_term) {
             count--;
-            printf("%s[%d] Received SIGTERM from %d. %s\n",YELLOW, getpid(), pid_sigt, DF);
+            printf("%s[%d] Received SIGTERM from %d. %s\n", YELLOW, getpid(),
+                   pid_sigt, DF);
             sig_term = 0;
         }
         if (sig_int) {

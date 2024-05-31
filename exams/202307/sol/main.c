@@ -1,16 +1,14 @@
+#include <fcntl.h>
+#include <signal.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <signal.h>
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <sys/msg.h>
 #include <sys/ipc.h>
+#include <sys/msg.h>
+#include <sys/stat.h>
+#include <sys/types.h>
 #include <sys/wait.h>
-#include <fcntl.h>
 #include <unistd.h>
-#include <error.h>
-
 
 #define ERR_ARGS 1
 
@@ -31,8 +29,9 @@ struct msg_buf {
     char mtext[MAX_BUFFER];
 } msg_snd;
 
-void workers_handler(int signu, siginfo_t *info,__attribute__((unused)) void *ucontext) {
-    if(signu == SIGUSR1) {
+void workers_handler(int signu, siginfo_t *info,
+                     __attribute__((unused)) void *ucontext) {
+    if (signu == SIGUSR1) {
         sig1 = 1;
         sig1_pid = info->si_pid;
     }
@@ -49,15 +48,15 @@ void workers_handler(int signu, siginfo_t *info,__attribute__((unused)) void *uc
 }
 
 void master_handler(int signu) {
-    if(signu == SIGWINCH) {
+    if (signu == SIGWINCH) {
         transfer_queue = 1;
     }
-    if(signu == SIGTERM) {
+    if (signu == SIGTERM) {
         terminate = 1;
     }
 }
 
-int main(int argc, char * argv[]) {
+int main(int argc, char *argv[]) {
     int n;
     FILE *fd;
     pid_t pid;
@@ -68,7 +67,8 @@ int main(int argc, char * argv[]) {
     } else {
         // Checking n
         n = atoi(argv[1]);
-        if (strspn(argv[1], "0123456789") != strlen(argv[1]) || n < 1 || n > 10) {
+        if (strspn(argv[1], "0123456789") != strlen(argv[1]) || n < 1 ||
+            n > 10) {
             fprintf(stderr, "n must be an int from 1 to 10 included\n");
             exit(ERR_ARGS);
         }
@@ -91,7 +91,7 @@ int main(int argc, char * argv[]) {
     }
     int master_pid = getpid();
     printf("%s[%d] MASTER%s\n", GREEN, master_pid, DF);
-    pid_t * workers = malloc(n*sizeof(pid_t));
+    pid_t *workers = malloc(n * sizeof(pid_t));
     pid_t fork_pid;
 
     // Create queue
@@ -104,7 +104,7 @@ int main(int argc, char * argv[]) {
         perror("msgget");
     }
     // Setting master as a group leader
-    if (setpgid(0,0) == -1) {
+    if (setpgid(0, 0) == -1) {
         perror("setpgid");
         exit(1);
     }
@@ -122,7 +122,8 @@ int main(int argc, char * argv[]) {
     // Workers creation
     for (int i = 0; i < n; i++) {
         fork_pid = fork();
-        // If child add the signal handler send the signal to pid and break the loop
+        // If child add the signal handler send the signal to pid and break the
+        // loop
         if (fork_pid == 0) {
             sigaction(SIGUSR1, &act1, NULL);
             sigaction(SIGUSR2, &act2, NULL);
@@ -130,8 +131,8 @@ int main(int argc, char * argv[]) {
             sigaction(SIGTERM, &act2, NULL);
             printf("%s[%d] WORKER%s\n", BLUE, getpid(), DF);
             kill(pid, SIGTERM);
-            break; 
-        } 
+            break;
+        }
         // Save child pid into workers
         else {
             workers[i] = fork_pid;
@@ -143,29 +144,30 @@ int main(int argc, char * argv[]) {
     // Worker process
     while (!fork_pid) {
         if (sig1) {
-            printf("%s[%d] Received SIGUSR1 from %d%s\n", BLUE, getpid(), sig1_pid, DF);
+            printf("%s[%d] Received SIGUSR1 from %d%s\n", BLUE, getpid(),
+                   sig1_pid, DF);
             kill(sig1_pid, SIGUSR1);
             sig1 = 0;
         }
         if (sig2) {
-            printf("%s[%d] Received SIGUSR2 from %d%s\n", BLUE, getpid(), sig2_pid, DF);
+            printf("%s[%d] Received SIGUSR2 from %d%s\n", BLUE, getpid(),
+                   sig2_pid, DF);
             kill(sig2_pid, SIGUSR2);
             sig2 = 0;
         }
         if (transfer_queue) {
-
             fgets(msg_snd.mtext, MAX_BUFFER, fd);
             if (feof(fd)) {
                 kill(master_pid, SIGTERM);
-            } 
-            else {
+            } else {
                 // Important to flush
                 fflush(fd);
-                int len = strlen(msg_snd.mtext)-1;
+                int len = strlen(msg_snd.mtext) - 1;
                 // fgets write also new line
                 msg_snd.mtext[len] = 0;
                 msg_snd.type = getpid();
-                printf("%s[%d] Just read %s %s\n", BLUE, getpid(), msg_snd.mtext, DF);
+                printf("%s[%d] Just read %s %s\n", BLUE, getpid(),
+                       msg_snd.mtext, DF);
 
                 if (msgsnd(queueId, &msg_snd, sizeof(msg_snd.mtext), 0) == -1) {
                     perror("msgsnd");
@@ -185,24 +187,24 @@ int main(int argc, char * argv[]) {
         signal(SIGTERM, master_handler);
     }
     // Master process
-    while(fork_pid) {
+    while (fork_pid) {
         if (transfer_queue) {
             int i = 0;
-            while(!terminate) {
-                i = (i+1)%n;
+            while (!terminate) {
+                i = (i + 1) % n;
                 kill(workers[i], SIGINT);
                 sleep(1);
             }
             printf("%s[%d]Terminating children.%s\n", GREEN, getpid(), DF);
             kill(-master_pid, SIGTERM);
-            break;          
+            break;
         }
         if (terminate) {
             printf("%s[%d] Killing all children%s\n", GREEN, getpid(), DF);
-            if (kill(-getpid(), SIGTERM)==-1) {
+            if (kill(-getpid(), SIGTERM) == -1) {
                 perror("kill");
             }
-            while(wait(NULL) > 0);
+            while (wait(NULL) > 0);
             break;
         }
         pause();
