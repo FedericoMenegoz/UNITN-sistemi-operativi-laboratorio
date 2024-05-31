@@ -1,7 +1,7 @@
 SHELL := /bin/bash
 CC := gcc
 CFLAGS := -Wall -Wextra -Wpedantic
-
+OUT_FILES := $(wildcard *.out)
 SOURCES := $(wildcard *.c)
 TARGET := $(patsubst %.c, %.out, $(SOURCES))
 
@@ -15,4 +15,5 @@ ALL: $(TARGET)
 	@$(CC) $(CFLAGS) $< -o $@ -pthread
 
 clean: 
-	@rm signal_receiver.out
+	@echo removing $(OUT_FILES)
+	@rm $(OUT_FILES) 

@@ -12,6 +12,7 @@ sol:
 clean:
 	@$(MAKE) -C sol clean
 	@$(MAKE) -C test clean
+	@[[ -e test.out ]] && rm test.out
 
 info:
 	@echo "************************************************************"

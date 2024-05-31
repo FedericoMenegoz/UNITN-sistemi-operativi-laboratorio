@@ -67,7 +67,7 @@ int main(void) {
     evaluate("TASK 1 (arguments checking)", tasks[0]);
 
     tasks[1] = task2_create_workers();
-    evaluate("TASK 2 (creating )", tasks[1]);
+    evaluate("TASK 2 (creating workers)", tasks[1]);
 
     tasks[2] = task3_handling_sigusr1_2();
     evaluate("TASK 3 (handling SIGUSR1-2)", tasks[2]);
