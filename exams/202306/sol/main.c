@@ -1,15 +1,15 @@
-#include <unistd.h>
-#include <stdlib.h>
 #include <errno.h>
 #include <fcntl.h>
-#include <stdio.h>
-#include <signal.h>
-#include <string.h>
 #include <pthread.h>
-#include <sys/types.h>
+#include <signal.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 #include <sys/ipc.h>
 #include <sys/msg.h>
 #include <sys/stat.h>
+#include <sys/types.h>
+#include <unistd.h>
 
 #define ERR_ARG 1
 #define ERR_FILE 2
@@ -30,13 +30,13 @@ void handler(int signu) {
     }
 }
 
-struct msg{
+struct msg_buf {
     long category;
     char text[MAX_BUFFER];
 } msg_snd;
 
-void *kill_routine(__attribute__((unused)) void *args){
-    while(1) {
+void *kill_routine(__attribute__((unused)) void *args) {
+    while (1) {
         pthread_mutex_lock(&kill_mtx);
         while (!kill_flag) {
             pthread_cond_wait(&kill_cond, &kill_mtx);
@@ -48,10 +48,10 @@ void *kill_routine(__attribute__((unused)) void *args){
     return NULL;
 }
 
-void *fifo_routine(__attribute__((unused)) void *args){
-    while(1) {
+void *fifo_routine(__attribute__((unused)) void *args) {
+    while (1) {
         pthread_mutex_lock(&fifo_mtx);
-        while(!fifo_flag) {
+        while (!fifo_flag) {
             pthread_cond_wait(&fifo_cond, &fifo_mtx);
         }
         int fd = open(fifo_name, O_WRONLY | O_CREAT, 0777);
@@ -66,11 +66,11 @@ void *fifo_routine(__attribute__((unused)) void *args){
     }
     return NULL;
 }
-void *queue_routine(void *args){
-    int qID = *(int *) args;
-    while(1) {
+void *queue_routine(void *args) {
+    int qID = *(int *)args;
+    while (1) {
         pthread_mutex_lock(&queue_mtx);
-        while(!queue_flag) {
+        while (!queue_flag) {
             pthread_cond_wait(&queue_cond, &queue_mtx);
         }
         if (msgsnd(qID, &msg_snd, sizeof(msg_snd.text), 0) == -1) {
@@ -87,7 +87,7 @@ int main(int argc, char *argv[]) {
         fprintf(stderr, "Usage: %s <path/to/file.txt>\n", argv[0]);
         exit(ERR_ARG);
     }
-    FILE * cmd_file = fopen(argv[1], "r");
+    FILE *cmd_file = fopen(argv[1], "r");
 
     if (!cmd_file) {
         perror("Error opening the file");
@@ -106,24 +106,23 @@ int main(int argc, char *argv[]) {
     signal(SIGUSR1, handler);
 
     pthread_t kill_th, queue_th, fifo_th;
-   
+
     pthread_mutex_init(&kill_mtx, NULL);
     pthread_mutex_init(&queue_mtx, NULL);
     pthread_mutex_init(&fifo_mtx, NULL);
     pthread_cond_init(&kill_cond, NULL);
     pthread_cond_init(&queue_cond, NULL);
     pthread_cond_init(&fifo_cond, NULL);
-    
+
     pthread_create(&kill_th, NULL, kill_routine, NULL);
     pthread_create(&queue_th, NULL, queue_routine, &queueId);
     pthread_create(&fifo_th, NULL, fifo_routine, NULL);
-
 
     char cmd[MAX_BUFFER];
     char arg1[MAX_BUFFER];
     char arg2[MAX_BUFFER];
 
-    while(fscanf(cmd_file, "%s %s %s", cmd, arg1, arg2) != -1) {
+    while (fscanf(cmd_file, "%s %s %s", cmd, arg1, arg2) != -1) {
         wait_flag = 1;
         if (strcmp(cmd, "kill") == 0) {
             pthread_mutex_lock(&kill_mtx);
@@ -138,7 +137,7 @@ int main(int argc, char *argv[]) {
             msg_snd.category = atoi(arg1);
             strcpy(msg_snd.text, arg2);
             pthread_mutex_unlock(&queue_mtx);
-            pthread_cond_signal(&queue_cond);            
+            pthread_cond_signal(&queue_cond);
         } else if (strcmp(cmd, "fifo") == 0) {
             pthread_mutex_lock(&fifo_mtx);
             fifo_flag = 1;
@@ -149,7 +148,7 @@ int main(int argc, char *argv[]) {
         } else {
             fprintf(stderr, "Wrong command %s\n", cmd);
         }
-        while(wait_flag);
+        while (wait_flag);
         sleep(1);
     }
     pthread_join(kill_th, NULL);
