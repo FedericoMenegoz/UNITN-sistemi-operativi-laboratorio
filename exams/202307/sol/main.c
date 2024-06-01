@@ -209,5 +209,8 @@ int main(int argc, char *argv[]) {
         }
         pause();
     }
+    if(fork_pid) {
+        printf("%s[%d] done ...%s\n", GREEN, getpid(), DF);
+    }
     return 0;
 }
