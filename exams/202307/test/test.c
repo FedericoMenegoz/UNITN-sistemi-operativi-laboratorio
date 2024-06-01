@@ -18,7 +18,6 @@
 #define BOLD "\033[1m"
 #define UNBOLD "\033[m"
 
-
 #define MAX_BUFFER 256
 
 #define TASK1 3
@@ -37,8 +36,8 @@
 
 #define MESSAGES 15
 const char *WORDS[] = {"Passing",   "operating", "systems", "is",  "like",
-                       "getting",   "a",         "Roman",  "to",  "cook",
-                       "carbonara", "with",      "cream",  "and", "ham!"};
+                       "getting",   "a",         "Roman",   "to",  "cook",
+                       "carbonara", "with",      "cream",   "and", "ham!"};
 
 void success(char *msg) {
     printf("%s%s%s SUCCESS ! %s%s\n", BOLD, msg, GREEN, UNBOLD, DF);
@@ -94,7 +93,7 @@ int main(void) {
     tasks[0] = task1_checking_args();
     sleep(1);
     evaluate("TASK 1 (arguments checking)", tasks[0]);
-    
+
     tasks[1] = task2_create_workers();
     sleep(1);
     evaluate("TASK 2 (creating workers)", tasks[1]);
@@ -109,16 +108,19 @@ int main(void) {
     sleep(1);
     evaluate("TASK 5 (message queue only workers)", tasks[4]);
     sleep(1);
-    evaluate("TASK 6 (correct terminating of PostOffice and Workers)", tasks[5]);
+    evaluate("TASK 6 (correct terminating of PostOffice and Workers)",
+             tasks[5]);
     sleep(1);
-    evaluate("TASK 7 (equal distribution of messages between workers)", tasks[6]);
+    evaluate("TASK 7 (equal distribution of messages between workers)",
+             tasks[6]);
     remove(LOG_ERR);
 
     for (int i = 0; i < 7; i++) {
         score += tasks[i];
     }
-    printf("%s[%d] Total score is %d out of 31.%s\n", BOLD, getpid(), score, UNBOLD);
-       
+    printf("%s[%d] Total score is %d out of 31.%s\n", BOLD, getpid(), score,
+           UNBOLD);
+
     return 0;
 }
 
@@ -262,7 +264,7 @@ int task2_create_workers(void) {
     sleep(1);
     kill(-program_pid, SIGTERM);
     kill(signal_receiver_pid, SIGINT);
-    usleep(500000);
+    usleep(200000);
     wait(&status);
     if (WEXITSTATUS(status) == 0) {
         return TASK2;
@@ -270,7 +272,6 @@ int task2_create_workers(void) {
         return 0;
     }
 }
-
 
 int task3_handling_sigusr1_2(void) {
     int program_pid;
@@ -287,24 +288,24 @@ int task3_handling_sigusr1_2(void) {
     usleep(500000);
     for (int i = 0; i < N_T3; i++) {
         kill(workers_t3[i], SIGUSR1);
-        usleep(500000);
-        usleep(500000);
+        usleep(200000);
+        usleep(200000);
         if (!task3_sig1) {
             return 0;
         }
         task3_sig1 = 0;
         for (int j = 0; j < N_T3; j++) {
             kill(workers_t3[i], SIGUSR2);
-            usleep(500000);
-            usleep(500000);
+            usleep(200000);
+            usleep(200000);
             if (!task3_sig2) {
                 return 0;
             }
             task3_sig2 = 0;
         }
         kill(workers_t3[i], SIGUSR1);
-        usleep(500000);
-        usleep(500000);
+        usleep(200000);
+        usleep(200000);
         if (task3_sig1) {
             return 0;
         }
@@ -339,8 +340,8 @@ void task4_5_6_7_queue_transfer(int tasks[]) {
             exit(1);
         }
     }
-    while(worker_counter < N_T3);
-    sleep(2);
+    while (worker_counter < N_T3);
+    usleep(200000);
     printf("%s[%d] Sendig SIGWINCH%s\n", BOLD, getpid(), UNBOLD);
     if (kill(program_pid, SIGWINCH) == -1) {
         perror("kill");
@@ -348,7 +349,7 @@ void task4_5_6_7_queue_transfer(int tasks[]) {
     struct msg_buf {
         long type;
         char mtext[MAX_BUFFER];
-    }msg_rcv;
+    } msg_rcv;
 
     int key = ftok(TEST_FILE, program_pid);
     if (key == -1) {
@@ -365,23 +366,28 @@ void task4_5_6_7_queue_transfer(int tasks[]) {
     int w[] = {0, 0, 0};
     int index;
     for (int i = 0; i < MESSAGES; i++) {
-        if ((res = msgrcv(queueId, &msg_rcv, sizeof(msg_rcv.mtext), 0, IPC_NOWAIT)) == -1 && errno != ENOMSG) {
+        if ((res = msgrcv(queueId, &msg_rcv, sizeof(msg_rcv.mtext), 0,
+                          IPC_NOWAIT)) == -1 &&
+            errno != ENOMSG) {
             perror("msgrcv");
             exit(1);
         } else if (res == -1) {
-            printf("%s[%d] %d message not received ...%s\n", BOLD, getpid(), i, UNBOLD);
+            printf("%s[%d] %d message not received ...%s\n", BOLD, getpid(), i,
+                   UNBOLD);
             tasks[3] = tasks[6] = tasks[5] = tasks[4] = 0;
             return;
         }
         if (strcmp(msg_rcv.mtext, WORDS[i]) != 0) {
-            printf("%s[%d] %s != %s %s\n", BOLD, getpid(), msg_rcv.mtext, WORDS[i], UNBOLD);
+            printf("%s[%d] %s != %s %s\n", BOLD, getpid(), msg_rcv.mtext,
+                   WORDS[i], UNBOLD);
             tasks[3] = tasks[6] = tasks[5] = tasks[4] = 0;
             return;
         }
         if ((index = is_worker(msg_rcv.type)) >= 0) {
             w[index]++;
         } else {
-            printf("%s[%d] Message \"%s\" from a non worker pid %ld %s\n", BOLD, getpid(), msg_rcv.mtext, msg_rcv.type, UNBOLD);
+            printf("%s[%d] Message \"%s\" from a non worker pid %ld %s\n", BOLD,
+                   getpid(), msg_rcv.mtext, msg_rcv.type, UNBOLD);
             tasks[6] = tasks[4] = 0;
         }
         sleep(1);
@@ -390,24 +396,24 @@ void task4_5_6_7_queue_transfer(int tasks[]) {
     if (tasks[4]) {
         if (!(w[0] == w[1] && w[1] == w[2] && w[2] == 5)) {
             tasks[6] = 0;
-        } 
+        }
     }
 
-    sleep(1);
+    usleep(200000);
     // Check if children are dead.
     for (int i = 0; i < N_T3; i++) {
         if (kill(workers_t3[i], 0) == 0) {
-            printf("%s[%d] Worker %d still reachable%s\n", BOLD, getpid(), workers_t3[i], UNBOLD);
+            printf("%s[%d] Worker %d still reachable%s\n", BOLD, getpid(),
+                   workers_t3[i], UNBOLD);
             tasks[5] = 0;
             break;
         }
     }
-    while(wait(NULL) > 0); 
+    while (wait(NULL) > 0);
     if (kill(program_pid, 0) == 0) {
-        printf("%s[%d] PosdtOffice %d still reachable%s\n", BOLD, getpid(), program_pid, UNBOLD);
+        printf("%s[%d] PosdtOffice %d still reachable%s\n", BOLD, getpid(),
+               program_pid, UNBOLD);
         tasks[5] = 0;
     }
     msgctl(queueId, IPC_RMID, NULL);
-
 }
-
