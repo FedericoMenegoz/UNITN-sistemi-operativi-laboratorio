@@ -195,7 +195,7 @@ int main(int argc, char *argv[]) {
                 kill(workers[i], SIGINT);
                 sleep(1);
             }
-            printf("%s[%d]Terminating children.%s\n", GREEN, getpid(), DF);
+            printf("%s[%d] Terminating children.%s\n", GREEN, getpid(), DF);
             kill(-master_pid, SIGTERM);
             break;
         }
