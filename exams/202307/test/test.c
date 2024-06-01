@@ -388,7 +388,7 @@ void task4_5_6_7_queue_transfer(int tasks[]) {
     }
     // 15 messages should be 5 messages each worker
     if (tasks[4]) {
-        if (!(w[0] == w[1] && w[1] == w[2])) {
+        if (!(w[0] == w[1] && w[1] == w[2] && w[2] == 5)) {
             tasks[6] = 0;
         } 
     }

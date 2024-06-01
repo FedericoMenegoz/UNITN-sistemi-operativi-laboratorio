@@ -210,7 +210,9 @@ int main(int argc, char *argv[]) {
         pause();
     }
     if(fork_pid) {
-        printf("%s[%d] done ...%s\n", GREEN, getpid(), DF);
+        sleep(1);
+        msgctl(queueId, IPC_RMID, NULL);
+        printf("%s[%d] PostOffice is close ...%s\n", GREEN, getpid(), DF);
     }
     return 0;
 }
