@@ -1,5 +1,5 @@
-kill 30 7299
-kill 31 7299
+kill 30 26800
+kill 31 26800
 queue 1 I
 fifo ./test/esame202306_fifo I
 queue 2 won't
