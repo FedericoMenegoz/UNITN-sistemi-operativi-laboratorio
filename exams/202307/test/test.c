@@ -56,7 +56,9 @@ void evaluate(char *msg, int passed) {
 // flags
 int task3_sig1 = 0, task3_sig2 = 0, worker_counter = 0;
 #define N_T3 3
-pid_t workers_t3[N_T3];
+#define UDELAY 200000
+#define MAX_WORKERS 10
+pid_t workers_t3[MAX_WORKERS];
 
 void handler_task3(int signu, siginfo_t *info,
                    __attribute__((unused)) void *ucontext) {
@@ -89,6 +91,7 @@ int main(void) {
     sigaction(SIGUSR1, &act, NULL);
     sigaction(SIGTERM, &act, NULL);
     sigaction(SIGUSR2, &act, NULL);
+    printf("%s[%d] Testing PostOffice%s\n",BOLD, getpid(), UNBOLD);
 
     tasks[0] = task1_checking_args();
     sleep(1);
@@ -126,14 +129,13 @@ int main(void) {
 
 int task1_checking_args(void) {
     int pid_fork, first_fork, status, bytes, offset = 0;
-
-    printf("[%d] Test program\n", getpid());
+    worker_counter = 0;
     // Save stderr
     int stderr_fd = dup(STDERR_FILENO);
     int logerr_fd = open(LOG_ERR, O_CREAT | O_RDWR, 0777);
     if (dup2(logerr_fd, STDERR_FILENO) == -1) {
         perror("dup2");
-        return -1;
+        exit(-1);
     }
     // wrong number of args
     first_fork = fork();
@@ -206,14 +208,8 @@ int task1_checking_args(void) {
         return 0;
     }
 
-    // Let's call it with everything right
-    int signal_receiver_pid = fork();
-    if (signal_receiver_pid == 0) {
-        if (execl(SIG_REC, SIG_REC, "1", NULL) == -1) {
-            perror("execl");
-        }
-    }
-    snprintf(buffer, MAX_BUFFER, "%d", signal_receiver_pid);
+    // All args are valid
+    snprintf(buffer, MAX_BUFFER, "%d", getpid());
 
     pid_fork = fork();
 
@@ -224,7 +220,6 @@ int task1_checking_args(void) {
         exit(-1);
     }
     sleep(1);
-    kill(signal_receiver_pid, SIGINT);
     kill(-pid_fork, SIGTERM);
     wait(&status);
     lseek(logerr_fd, offset, SEEK_SET);
@@ -242,29 +237,23 @@ int task1_checking_args(void) {
 }
 
 int task2_create_workers(void) {
-    int signal_receiver_pid, program_pid, status;
+    worker_counter = 0;
+    int program_pid, status;
     char *N = "10";
     char buffer[MAX_BUFFER];
-    signal_receiver_pid = fork();
 
-    if (signal_receiver_pid == 0) {
-        if (execl(SIG_REC, SIG_REC, N, NULL) == -1) {
-            perror("execl");
-        }
-    }
-
-    snprintf(buffer, MAX_BUFFER, "%d", signal_receiver_pid);
+    snprintf(buffer, MAX_BUFFER, "%d", getpid());
     program_pid = fork();
     if (program_pid == 0) {
         if (execl(PROGRAM, PROGRAM, N, TEST_FILE, buffer, NULL) == -1) {
             perror("execl");
+            exit(1);
         }
     }
 
     sleep(1);
     kill(-program_pid, SIGTERM);
-    kill(signal_receiver_pid, SIGINT);
-    usleep(200000);
+    usleep(UDELAY);
     wait(&status);
     if (WEXITSTATUS(status) == 0) {
         return TASK2;
@@ -274,6 +263,7 @@ int task2_create_workers(void) {
 }
 
 int task3_handling_sigusr1_2(void) {
+    worker_counter = 0;
     int program_pid;
     char buffer[MAX_BUFFER];
 
@@ -285,27 +275,27 @@ int task3_handling_sigusr1_2(void) {
             exit(1);
         }
     }
-    usleep(500000);
+    usleep(UDELAY);
     for (int i = 0; i < N_T3; i++) {
         kill(workers_t3[i], SIGUSR1);
-        usleep(200000);
-        usleep(200000);
+        usleep(UDELAY);
+        usleep(UDELAY);
         if (!task3_sig1) {
             return 0;
         }
         task3_sig1 = 0;
         for (int j = 0; j < N_T3; j++) {
             kill(workers_t3[i], SIGUSR2);
-            usleep(200000);
-            usleep(200000);
+            usleep(UDELAY);
+            usleep(UDELAY);
             if (!task3_sig2) {
                 return 0;
             }
             task3_sig2 = 0;
         }
         kill(workers_t3[i], SIGUSR1);
-        usleep(200000);
-        usleep(200000);
+        usleep(UDELAY);
+        usleep(UDELAY);
         if (task3_sig1) {
             return 0;
         }
@@ -341,7 +331,7 @@ void task4_5_6_7_queue_transfer(int tasks[]) {
         }
     }
     while (worker_counter < N_T3);
-    usleep(200000);
+    usleep(UDELAY);
     printf("%s[%d] Sendig SIGWINCH%s\n", BOLD, getpid(), UNBOLD);
     if (kill(program_pid, SIGWINCH) == -1) {
         perror("kill");
@@ -375,12 +365,14 @@ void task4_5_6_7_queue_transfer(int tasks[]) {
             printf("%s[%d] %d message not received ...%s\n", BOLD, getpid(), i,
                    UNBOLD);
             tasks[3] = tasks[6] = tasks[5] = tasks[4] = 0;
+            kill(-program_pid, SIGTERM);
             return;
         }
         if (strcmp(msg_rcv.mtext, WORDS[i]) != 0) {
             printf("%s[%d] %s != %s %s\n", BOLD, getpid(), msg_rcv.mtext,
                    WORDS[i], UNBOLD);
             tasks[3] = tasks[6] = tasks[5] = tasks[4] = 0;
+            kill(-program_pid, SIGTERM);
             return;
         }
         if ((index = is_worker(msg_rcv.type)) >= 0) {
@@ -399,7 +391,7 @@ void task4_5_6_7_queue_transfer(int tasks[]) {
         }
     }
 
-    usleep(200000);
+    usleep(UDELAY);
     // Check if children are dead.
     for (int i = 0; i < N_T3; i++) {
         if (kill(workers_t3[i], 0) == 0) {

@@ -211,7 +211,7 @@ int main(int argc, char *argv[]) {
     }
     if (fork_pid) {
         sleep(1);
-        msgctl(queueId, IPC_RMID, NULL);
+        // msgctl(queueId, IPC_RMID, NULL);
         printf("%s[%d] PostOffice is closed ...%s\n", GREEN, getpid(), DF);
     }
     return 0;
