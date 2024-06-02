@@ -1,8 +1,16 @@
 #include <stdio.h>
+#include <unistd.h>
+#include <signal.h>
 
-pid_t 
+#define MAX_CHILDREN 10
+
+pid_t children[MAX_CHILDREN];
 
 int main(void) {
-    printf("ciao\n");
+    struct sigaction act;
+    memset(&act, 0, sizeof(act));
+    act.sa_flags = SA_SIGINFO
+    act.sa_sigaction = handler
+
     return 0;
 }
