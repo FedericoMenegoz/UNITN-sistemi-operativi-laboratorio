@@ -16,4 +16,3 @@ endif
 
 clean:
 	@[[ -d $(DIR) ]] && rm -r $(DIR) && echo "$(DIR) removed" || echo "nothing to do"
-

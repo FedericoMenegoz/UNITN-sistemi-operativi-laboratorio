@@ -9,7 +9,7 @@ My solutions to past exams. For some of them, I have prepared a simple test to c
 
 ## [June 2021](202106b/) 
 - Makefile
-- File operation
+- File operations
 - Message Queue
 - Signal
 - [ ] ~~test~~
@@ -27,7 +27,7 @@ My solutions to past exams. For some of them, I have prepared a simple test to c
 
 ## [January 2023](202301/)
 - Makefile
-- File operation
+- File operations
 - Signal
 - Pthread
 - Bash
@@ -40,4 +40,10 @@ My solutions to past exams. For some of them, I have prepared a simple test to c
 - Message Queue
 - Pthreads
 - Bash
+- [x] __test__
+
+## [July 2023](202307/)
+- Signal handling
+- Message Queue
+- File Operations
 - [x] __test__
