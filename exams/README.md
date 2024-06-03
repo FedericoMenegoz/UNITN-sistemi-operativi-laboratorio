@@ -47,3 +47,10 @@ My solutions to past exams. For some of them, I have prepared a simple test to c
 - Message Queue
 - File Operations
 - [x] __test__
+
+
+## [January 2024](202401/)
+- Signal handling
+- Message Queue
+- Fifo
+- [ ] ~~test~~
