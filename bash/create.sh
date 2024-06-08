@@ -8,7 +8,7 @@ while [[ $i -le $1 ]]; do
     j=1
     while [[ $j -le $2 ]]; do
         if [[ -f $3 ]]; then 
-            cp $3 $i/$j
+            cp "$3" "$i/$j"
         else 
             touch $i/$j
         fi

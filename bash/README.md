@@ -3,6 +3,9 @@ These are some exercises I found online. \
 At this link there you can find a super bash course where I got some of these exercises.\
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.1045332.svg)](https://doi.org/10.5281/zenodo.1038525)
 
+## Useful Links
+- [Shell Check](https://www.shellcheck.net)
+
 # [Seq](seq.sh)
 Write a script `seq <start> <step> <end>`
 - if one argument is provided `seq <end>` will print from 1 to `end`
