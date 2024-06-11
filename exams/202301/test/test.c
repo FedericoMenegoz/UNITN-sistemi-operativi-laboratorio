@@ -73,6 +73,12 @@ int main(int argc, char *argv[]) {
         }
        strcpy(path_to_log, argv[1]);
     }
+    // create queue
+    int key = ftok(path_to_log, 1);
+    int queueId = msgget(key, IPC_CREAT | 0666);
+    if (queueId == -1) {
+        perror("msgget");
+    }
 
     int signal_pid = fork();
     if (signal_pid == -1) {
@@ -123,19 +129,13 @@ int main(int argc, char *argv[]) {
 
     printf("%s%sChecking message queue.%s%s\n", YELLOW, BOLD, UNBOLD, DF);
     // Send message to the queue
-    int key = ftok(path_to_log, 1);
-    int queueId = msgget(key, IPC_CREAT | 0666);
-    if (queueId == -1) {
-        perror("msgget");
-    }
-
     struct msg {
         long type;
         char text[MAX_LOG];
     } msg_rcv;
 
     msg_rcv.type = 1;
-    snprintf(msg_rcv.text, MAX_LOG, "#%d", getpid());
+    snprintf(msg_rcv.text, MAX_LOG, "%d", getpid());
     if (msgsnd(queueId, &msg_rcv, strlen(msg_rcv.text), 0) == -1) {
         perror("msgsnd");
     }
@@ -143,7 +143,7 @@ int main(int argc, char *argv[]) {
     // Check for SIGALARM
     check_condition(sigalrm == 1 && al_pid == signal_pid, "SIGALARM");
     // Wait signal to write everything on log file
-    sleep(5);
+    sleep(3);
     // Simulate a ctrl-c
     kill(signal_pid, SIGINT);
     sleep(3);
@@ -158,12 +158,15 @@ int main(int argc, char *argv[]) {
     check_condition(strcmp(buffer, "start") == 0, "start=start");
     int pid_to_check, sig_to_check;
     fscanf(f, "%d-%d\n", &pid_to_check, &sig_to_check);
+    printf("pid => %d=%d?\nsig => %d=%d?\n", pid_to_check, getpid(), sig_to_check, SIGUSR1);
     check_condition(pid_to_check == getpid() && sig_to_check == SIGUSR1,
                     "first signal");
     fscanf(f, "%d-%d\n", &pid_to_check, &sig_to_check);
+    printf("pid => %d=%d?\nsig => %d=%d?\n", pid_to_check, getpid(), sig_to_check, SIGUSR2);
     check_condition(pid_to_check == getpid() && sig_to_check == SIGUSR2,
                     "second signal");
     fscanf(f, "%4s\n", buffer);
+    printf("%s=%s?\n", buffer, "stop");
     check_condition(strcmp(buffer, "stop") == 0, "stop=stop");
     fclose(f);
     return 0;
