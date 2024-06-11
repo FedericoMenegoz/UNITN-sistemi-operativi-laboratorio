@@ -157,10 +157,10 @@ int main(int argc, char *argv[]) {
     fscanf(f, "%5s\n", buffer);
     check_condition(strcmp(buffer, "start") == 0, "start=start");
     int pid_to_check, sig_to_check;
-    fscanf(f, "#%d-#%d\n", &pid_to_check, &sig_to_check);
+    fscanf(f, "%d-%d\n", &pid_to_check, &sig_to_check);
     check_condition(pid_to_check == getpid() && sig_to_check == SIGUSR1,
                     "first signal");
-    fscanf(f, "#%d-#%d\n", &pid_to_check, &sig_to_check);
+    fscanf(f, "%d-%d\n", &pid_to_check, &sig_to_check);
     check_condition(pid_to_check == getpid() && sig_to_check == SIGUSR2,
                     "second signal");
     fscanf(f, "%4s\n", buffer);

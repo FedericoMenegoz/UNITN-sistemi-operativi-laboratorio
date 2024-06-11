@@ -149,7 +149,7 @@ int main(int argc, char* argv[]) {
 
 void write_to_log(pid_t sig_pid, int signo) {
     char* message = (char*)malloc(MAX_LOG * sizeof(char));
-    snprintf(message, MAX_LOG, "#%d-#%d\n", sig_pid, signo);
+    snprintf(message, MAX_LOG, "%d-%d\n", sig_pid, signo);
     if (pthread_create(&thread, NULL, thread_log, message)) {
         perror("pthred");
     }
