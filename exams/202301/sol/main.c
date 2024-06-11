@@ -15,7 +15,7 @@
 #define ERR_FILE 2
 #define MAX_THREADS 10
 
-#define MAX_LOG 16  // # <pid:8> -# <signu:2>
+#define MAX_LOG 16  //  <pid:8> - <signu:2>
 
 struct msgq {
     long type;
@@ -132,7 +132,7 @@ int main(int argc, char* argv[]) {
                 perror("msgrcv");
             }
         } else if (bytes > 0) {
-            pid_t pid = atoi(msg_rcv.text + 1);
+            pid_t pid = atoi(msg_rcv.text);
             kill(pid, SIGALRM);
         }
         if (terminate) {

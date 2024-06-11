@@ -11,23 +11,23 @@
 
 #define ERR_ARGS 1
 
+#define GREY "\033[0;30m"
 #define RED "\033[0;31m"
 #define GREEN "\033[0;32m"
 #define YELLOW "\033[0;33m"
 #define BLUE "\033[0;34m"
-#define DF "\033[0m"
 #define BOLD "\033[1m"
-#define UNBOLD "\033[0m"
+#define DF "\033[0m"
 
 #define MAX_LOG 16  // # <pid:8> -# <signu:2>
 #define SIGNAL_PROXY_BIN "./sol/SignalProxy.out"
 
 void success(char *msg) {
-    printf("%s%s%s%s SUCCESS ! %s%s\n", BLUE, msg, GREEN, BOLD, UNBOLD, DF);
+    printf("%s%s%s%s SUCCESS ! %s\n", BLUE, msg, GREEN, BOLD, DF);
 }
 
 void fail(char *msg) {
-    printf("%s%s%s%s FAILURE !%s%s\n", BLUE, msg, RED, BOLD, UNBOLD, DF);
+    printf("%s%s%s%s FAILURE !%s\n", BLUE, msg, RED, BOLD, DF);
 }
 
 void check_condition(int condition, char *msg) {
@@ -111,7 +111,7 @@ int main(int argc, char *argv[]) {
         perror("sigaction");
     }
 
-    printf("%s%sChecking SIGUSR1%s%s\n", YELLOW, BOLD, UNBOLD, DF);
+    printf("%s%sChecking SIGUSR1%s\n", YELLOW, BOLD, DF);
     // Send SIGUSR1 to SignalProxy
     kill(signal_pid, SIGUSR1);
     sleep(1);
@@ -119,7 +119,7 @@ int main(int argc, char *argv[]) {
     // Check return signal
     check_condition(sig1 == 1 && sig1_pid == signal_pid, "SIGUSR1");
     
-    printf("%s%sChecking SIGUSR2%s%s\n", YELLOW, BOLD, UNBOLD, DF);
+    printf("%s%sChecking SIGUSR2%s\n", YELLOW, BOLD, DF);
     // Send SIGUSR" to SignalProxy
     kill(signal_pid, SIGUSR2);
     sleep(1);
@@ -127,7 +127,7 @@ int main(int argc, char *argv[]) {
     // Check return signal
     check_condition(sig2 == 1 && sig2_pid != signal_pid, "SIGUSR2");
 
-    printf("%s%sChecking message queue.%s%s\n", YELLOW, BOLD, UNBOLD, DF);
+    printf("%s%sChecking message queue.%s\n", YELLOW, BOLD, DF);
     // Send message to the queue
     struct msg {
         long type;
@@ -150,7 +150,7 @@ int main(int argc, char *argv[]) {
     // Terminate SignalProxy
     kill(signal_pid, SIGTERM);
     wait(NULL);
-    printf("%s%sChecking %s ...%s%s\n",YELLOW, BOLD, path_to_log, UNBOLD, DF);
+    printf("%s%sChecking %s ...%s\n",YELLOW, BOLD, path_to_log, DF);
     // Check for file log
     FILE *f = fopen(path_to_log, "r");
     char buffer[MAX_LOG];
@@ -158,15 +158,15 @@ int main(int argc, char *argv[]) {
     check_condition(strcmp(buffer, "start") == 0, "start=start");
     int pid_to_check, sig_to_check;
     fscanf(f, "%d-%d\n", &pid_to_check, &sig_to_check);
-    printf("pid => %d=%d?\nsig => %d=%d?\n", pid_to_check, getpid(), sig_to_check, SIGUSR1);
+    printf("%spid => %d=%d?\nsig => %d=%d?%s\n",GREY, pid_to_check, getpid(), sig_to_check, SIGUSR1, DF);
     check_condition(pid_to_check == getpid() && sig_to_check == SIGUSR1,
                     "first signal");
     fscanf(f, "%d-%d\n", &pid_to_check, &sig_to_check);
-    printf("pid => %d=%d?\nsig => %d=%d?\n", pid_to_check, getpid(), sig_to_check, SIGUSR2);
+    printf("%spid => %d=%d?\nsig => %d=%d?%s\n", GREY, pid_to_check, getpid(), sig_to_check, SIGUSR2, DF);
     check_condition(pid_to_check == getpid() && sig_to_check == SIGUSR2,
                     "second signal");
     fscanf(f, "%4s\n", buffer);
-    printf("%s=%s?\n", buffer, "stop");
+    printf("%sstop=%s?%s\n",GREY, buffer, DF);
     check_condition(strcmp(buffer, "stop") == 0, "stop=stop");
     fclose(f);
     return 0;
