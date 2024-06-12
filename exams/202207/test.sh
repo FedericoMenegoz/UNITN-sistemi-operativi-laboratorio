@@ -1,25 +1,51 @@
 #!/bin/bash
-FIFO=./sol/fifo
 
+# Define colors for output
 bold=$(tput bold)
-# start stop underline
-underline=$(tput smul)
-non_underline=$(tput rmul)
-#set text colour
-red=$(tput setaf 1)
-green=$(tput setaf 2)
-grey=$(tput setaf 0)
-# set background colour
-back=$(tput setab 1)
-# reset
 reset=$(tput sgr0)
+CORRECT="${bold}CORRECT${reset}"
+INCORRECT="${bold}INCORRECT${reset}"
 
-CORRECT="${green}CORRECT${reset}"
-INCORRECT="${red}INCORRECT${reset}"
+# Function to run the test
+run_test() {
+    local fifo="$1"
+    local input="$2"
+    local correct_content="$3"
+    local program="$4"
+    local param="$5"
+    local expected_return="$6"
 
-# fifoget
+    echo "${bold}TESTING $program...${reset}"
+
+    # Write the input to the FIFO using the writer program
+    ./test/writer "$fifo" "$input" &
+    sleep 1
+
+    # Capture the program's output
+    program_output=$(./sol/"$program" "$fifo" "$param")
+    actual_return=$?
+
+    wait
+
+    # Check the return code
+    if [ "$actual_return" -eq "$expected_return" ]; then
+        echo -e "Return $expected_return? \t$CORRECT"
+    else
+        echo -e "Return $expected_return? $?\t$INCORRECT"
+    fi
+
+    # Check the stdout by comparing directly with correct_content
+    if [ "$program_output" == "$correct_content" ]; then
+        echo -e "STDOUT\t\t$CORRECT"
+    else
+        echo -e "STDOUT\t\t$INCORRECT"
+    fi
+}
+
+# Variables
+FIFO="path_to_fifo"
 INPUT="ABCDE1234"
-cat > ./correct.txt << EOL
+CORRECT_CONTENT=$(cat <<EOL
 A
 B
 C
@@ -30,29 +56,8 @@ E
 3
 4
 EOL
-echo "${bold}TESTING FIFOGET...${reset}"
+)
 
-./test/writer "$FIFO" "$INPUT" &
-sleep 1 && ./sol/fifoget "$FIFO" 9 1>tmp.txt && echo -e "Return 0? \t$CORRECT" || echo -e "Return 0? $?\t$INCORRECT"
-wait 
-diff --color tmp.txt correct.txt && echo -e "STDOUT\t\t$CORRECT" || echo -e "STDOUT\t\t$INCORRECT"
-
-./test/writer "$FIFO" "$INPUT" &
-sleep 1 && ./sol/fifoget "$FIFO" 10 1>tmp.txt || echo -e "Return 1? \t$CORRECT" || echo -e "Return 0? $?\t$INCORRECT"
-wait 
-diff --color tmp.txt correct.txt && echo -e "STDOUT\t\t$CORRECT" || echo -e "STDOUT\t\t$INCORRECT"
-
-# fifoskp
-INPUT="ABCDE12345"
-n=5
-cat > ./correct.txt << EOL
-A
-B
-C
-D
-1
-2
-3
-4
-EOL
-echo "${bold}TESTING FIFOSKP...${reset}"
+# Test cases
+run_test "$FIFO" "$INPUT" "$CORRECT_CONTENT" "fifoget" 9 0
+run_test "$FIFO" "$INPUT" "$CORRECT_CONTENT" "fifoget" 10 1
