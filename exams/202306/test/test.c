@@ -22,9 +22,9 @@
 #define MAX_WORD 256
 
 const char *SIG_REC = "./test/signal_receiver.out";
-const char *PROGRAM = "./sol/out/a.out";
+const char *PROGRAM = "./sol/a.out";
 const char *FIFO = "./test/esame202306_fifo";
-const char *CMD_FILE = "./test/esame202306_cmd";
+const char *CMD_FILE = "./test/cmd.txt";
 
 const char *WORDS[] = {"I",      "won't", "pass", "operating",
                        "system", "lab",   "exam!"};

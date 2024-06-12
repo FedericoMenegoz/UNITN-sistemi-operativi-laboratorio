@@ -1,18 +1,25 @@
-SHELL := /bin/bash
-CC := gcc
-CFLAGS := -Wall -Wpedantic -Wextra
-DIR := out
-EXE := a.out
+SHELL:=/bin/bash
+FILE:=../test/cmd.txt
+EXE:=a.out
+CC:=gcc
+CFLAGS:=-Wall -Wpedantic -Wextra -pthread
 
-ALL: main.c
-ifeq ($(FILE),)
-	@echo "ERROR? FILE missing"
-else
-	@[[ -e $(FILE) ]] && mkdir $(DIR) && cp $(FILE) $(DIR) && $(CC) $(CFLAGS) main.c -o $(DIR)/$(EXE) -pthread || echo $(FILE) does not exists.
+ALL: $(EXE)
+	@[ ! -e $(EXE) ] || echo "All done."
+
+$(EXE): main.c
+	@[[ ! -e $(FILE) ]] && echo "Error: $(FILE) not found." && exit 1 || echo "Compiling $@ ..."
+ifneq ($(DIR),)
+	@mkdir $(DIR)
+	@$(CC) $(CFLAGS) $< -o $(DIR)/$@ && echo "Compilation success." || echo "Compilation failed."
+else 
+	@$(CC) $(CFLAGS) $< -o $@ && echo "Compilation success." || echo "Compilation failed."
 endif
 
-
-.PHONY: ALL clean
-
 clean:
-	@[[ -d $(DIR) ]] && rm -r $(DIR) && echo "$(DIR) removed" || echo "nothing to do"
+	@rm *.out 2>/dev/null || echo "'.out' exec not found."
+ifneq ($(DIR),)
+	@rm -r $(DIR)
+endif
+
+.PHONY: ALL
