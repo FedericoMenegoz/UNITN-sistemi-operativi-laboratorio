@@ -1,9 +1,7 @@
 SHELL := /bin/bash
 all: sol test
 
-
-
-.PHONY: all sol test
+.PHONY: all sol test clean
 
 test:
 	@$(MAKE) -C test
