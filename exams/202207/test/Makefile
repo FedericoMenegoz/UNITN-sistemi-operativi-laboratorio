@@ -11,9 +11,9 @@ $(TARGETS): %: %.c
 	@echo "Building targets: $@"
 	@$(CC) $(CFLAGS) $^ -o $@ && echo "Built succesfull."
 
-clean-target:
+clean:
 	@echo "Removing $(TARGETS)" 
 	@rm $(TARGETS)
 
 
-.PHONY: clean-target
+.PHONY: clean ALL

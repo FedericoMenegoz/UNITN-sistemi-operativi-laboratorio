@@ -1,32 +1,50 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include <sys/stat.h>
-#include <sys/types.h>
 #include <unistd.h>
+#include <string.h>
+#include <sys/types.h>
+#include <fcntl.h>
+#include <sys/stat.h>
 
-#include "lib.c"
 
-char buffer[MAX_BUFFER];
+#define ERR_ARGS 3
+#define ERR_FIFO 2
+#define INCOMPLETE 1
+#define COMPLETE 0
+#define MAX_MSG 10
 
-int main(int argc, char* argv[]) {
-    int err, fd;
-    int n = check_parse_args(argc, argv, &err);
 
-    if (n < 0) {
-        exit(err);
+int main(int argc, char * argv[]) {
+    int n;
+    if (argc != 3) {
+        fprintf(stderr, "Usage: %s <path> <n>.\n", argv[0]);
+        return ERR_ARGS;
+    } else {
+        n = atoi(argv[2]);
+        if (strspn(argv[2], "0123456789") != strlen(argv[2]) || n < 0 || n > 10) {
+            fprintf(stderr, "n must be a valid int in between 0 and 10.\n");
+            return ERR_ARGS;
+        }
     }
 
-    fd = open_fifo(argv[1], &err, O_RDONLY);
+    int fd = open(argv[1], O_RDONLY);
     if (fd == -1) {
-        exit(err);
+        perror("open");
+        return ERR_FIFO;
     }
-
-    err = fifo_to_buffer(fd, &n);
-
     for (int i = 0; i < n; i++) {
-        printf("%c\n", buffer[i]);
+        char c;
+        int bytes = read(fd, &c, sizeof(char));
+        if(bytes == -1) {
+            perror("read");
+            close(fd);
+            return ERR_FIFO;
+        } else if (bytes == 0) {
+            return INCOMPLETE;
+        }
+        printf("%c\n", c);
     }
-
     close(fd);
-    return err;
+    return COMPLETE;
+
 }
