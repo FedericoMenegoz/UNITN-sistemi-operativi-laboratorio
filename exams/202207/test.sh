@@ -34,17 +34,11 @@ run_test() {
 
     # Write the input to the FIFO using the writer program
     ./test/writer "$fifo" "$input" &
-    writer_pid=$!
-    sleep 1
 
     # Capture the program's output
     program_output=$("$program" "$fifo" "$n")
     actual_return=$?
 
-    wait $writer_pid
-
-    # Remove FIFO
-    rm "$fifo"
 
     # Check the return code
     if [ "$actual_return" -eq "$expected_return" ]; then
@@ -63,6 +57,8 @@ run_test() {
         echo "${bold}Correct output:${reset}"
         echo -e "${grey}$correct_content${reset}"
     fi
+    # Remove FIFO
+    rm "$fifo"
 }
 
 # Check if binaries exist
@@ -90,6 +86,7 @@ EOL
 
 # Test cases
 run_test "$INPUT" "$CORRECT_CONTENT" "./sol/fifoget" 9 0
+sleep 1
 run_test "$INPUT" "$CORRECT_CONTENT" "./sol/fifoget" 10 1
 
 # FIFOSKP
@@ -120,6 +117,7 @@ E
 4
 EOL
 )
+sleep 1
 run_test "$INPUT" "$CORRECT_CONTENT" "./sol/fifoskp" 10 1
 
 # FIFOREV
@@ -139,6 +137,7 @@ EOL
 
 # Test cases
 run_test "$INPUT" "$CORRECT_CONTENT" "./sol/fiforev" 9 0
+sleep 1
 run_test "$INPUT" "$CORRECT_CONTENT" "./sol/fiforev" 10 1
 
 # FIFOPLY
@@ -154,4 +153,5 @@ EOL
 
 # Test cases
 run_test "$INPUT" "$CORRECT_CONTENT" "./sol/fifoply" 7 0
+sleep 1
 run_test "$INPUT" "$CORRECT_CONTENT" "./sol/fifoply" 10 1
