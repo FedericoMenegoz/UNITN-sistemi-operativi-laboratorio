@@ -9,16 +9,14 @@ reset=$(tput sgr0)
 CORRECT="${green}${bold}CORRECT${reset}"
 INCORRECT="${red}${bold}INCORRECT${reset}"
 
-FIFO="./sol/fifo"
-
-BINARIES=("fifoget" "fifoskp" "fiforev" "fifoply")
-
-# Check if binaries exists
-for bin in $BINARIES; do
-    if [ ! -e ./sol/$bin ]; then
-        echo -e "${bold}ERROR?\t${reset}${red}./sol/$bin not found${reset}" && exit 1
+# Function to create and manage FIFO
+create_fifo() {
+    local fifo="$1"
+    if [ -p "$fifo" ]; then
+        rm "$fifo"
     fi
-done
+    mkfifo "$fifo"
+}
 
 # Function to run the test
 run_test() {
@@ -27,18 +25,26 @@ run_test() {
     local program="$3"
     local n="$4"
     local expected_return="$5"
+    local fifo="./sol/fifo"
 
     echo "${bold}TESTING $program...${reset}"
 
+    # Create FIFO
+    create_fifo "$fifo"
+
     # Write the input to the FIFO using the writer program
-    ./test/writer "$FIFO" "$input" &
+    ./test/writer "$fifo" "$input" &
+    writer_pid=$!
     sleep 1
 
     # Capture the program's output
-    program_output=$("$program" "$FIFO" "$n")
+    program_output=$("$program" "$fifo" "$n")
     actual_return=$?
 
-    wait
+    wait $writer_pid
+
+    # Remove FIFO
+    rm "$fifo"
 
     # Check the return code
     if [ "$actual_return" -eq "$expected_return" ]; then
@@ -58,6 +64,14 @@ run_test() {
         echo -e "${grey}$correct_content${reset}"
     fi
 }
+
+# Check if binaries exist
+BINARIES=("fifoget" "fifoskp" "fiforev" "fifoply")
+for bin in "${BINARIES[@]}"; do
+    if [ ! -e ./sol/$bin ]; then
+        echo -e "${bold}ERROR?\t${reset}${red}./sol/$bin not found${reset}" && exit 1
+    fi
+done
 
 # FIFOGET
 INPUT="ABCDE1234"
@@ -141,5 +155,3 @@ EOL
 # Test cases
 run_test "$INPUT" "$CORRECT_CONTENT" "./sol/fifoply" 7 0
 run_test "$INPUT" "$CORRECT_CONTENT" "./sol/fifoply" 10 1
-
-rm "$FIFO"
