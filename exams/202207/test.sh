@@ -34,6 +34,7 @@ run_test() {
 
     # Write the input to the FIFO using the writer program
     ./test/writer "$fifo" "$input" &
+    # sleep 1
 
     # Capture the program's output
     program_output=$("$program" "$fifo" "$n")
@@ -59,6 +60,7 @@ run_test() {
     fi
     # Remove FIFO
     rm "$fifo"
+    sleep 1
 }
 
 # Check if binaries exist
@@ -86,7 +88,6 @@ EOL
 
 # Test cases
 run_test "$INPUT" "$CORRECT_CONTENT" "./sol/fifoget" 9 0
-sleep 1
 run_test "$INPUT" "$CORRECT_CONTENT" "./sol/fifoget" 10 1
 
 # FIFOSKP
@@ -117,7 +118,6 @@ E
 4
 EOL
 )
-sleep 1
 run_test "$INPUT" "$CORRECT_CONTENT" "./sol/fifoskp" 10 1
 
 # FIFOREV
@@ -137,7 +137,6 @@ EOL
 
 # Test cases
 run_test "$INPUT" "$CORRECT_CONTENT" "./sol/fiforev" 9 0
-sleep 1
 run_test "$INPUT" "$CORRECT_CONTENT" "./sol/fiforev" 10 1
 
 # FIFOPLY
@@ -153,5 +152,4 @@ EOL
 
 # Test cases
 run_test "$INPUT" "$CORRECT_CONTENT" "./sol/fifoply" 7 0
-sleep 1
 run_test "$INPUT" "$CORRECT_CONTENT" "./sol/fifoply" 10 1
