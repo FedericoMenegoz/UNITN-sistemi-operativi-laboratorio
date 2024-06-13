@@ -35,23 +35,27 @@ int main(int argc, char* argv[]) {
     }
 
     int n = strlen(argv[2]);
-    remove(argv[1]);
-    if (mkfifo(argv[1], O_CREAT | 0777) == -1) {
-        perror("[Writer] mkfifo");
-        return ERR_FIFO;
-    }
+    // remove(argv[1]);
+    // if (mkfifo(argv[1], O_WRONLY) == -1) {
+    //     perror("[Writer] mkfifo");
+    //     return ERR_FIFO;
+    // }
     int fd = open(argv[1], O_WRONLY);
     if (fd == -1) {
         perror("[Writer] open");
     }
-    char c;
 
-    for (int i = 0; i < n; i++) {
-        c = argv[2][i];
-        if (write(fd, &c, sizeof(char)) == -1) {
-            perror("[Writer] Error writing... ");
-        }
+    if (write(fd, argv[2], n) == -1) {
+        perror("[Writer] Error writing");
     }
+    // char c;
+
+    // for (int i = 0; i < n; i++) {
+    //     c = argv[2][i];
+    //     if (write(fd, &c, sizeof(char)) == -1) {
+    //         perror("[Writer] Error writing... ");
+    //     }
+    // }
 
     close(fd);
     return 0;
