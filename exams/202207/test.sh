@@ -5,7 +5,10 @@ bold=$(tput bold)
 grey=$(tput setaf 0)
 red=$(tput setaf 1)
 green=$(tput setaf 2)
+blue=$(tput setaf 4)
 reset=$(tput sgr0)
+underline=$(tput smul)
+non_underline=$(tput rmul)
 CORRECT="${green}${bold}CORRECT${reset}"
 INCORRECT="${red}${bold}INCORRECT${reset}"
 
@@ -27,7 +30,7 @@ run_test() {
     local expected_return="$5"
     local fifo="./sol/fifo"
 
-    echo "${bold}TESTING $program...${reset}"
+    echo "${bold}TESTING ${underline}${blue}$program...${reset}"
 
     # Create FIFO
     create_fifo "$fifo"
@@ -43,23 +46,24 @@ run_test() {
 
     # Check the return code
     if [ "$actual_return" -eq "$expected_return" ]; then
-        echo -e "Return $expected_return? \t$CORRECT"
+        echo -e "${grey}Return $expected_return? \t$CORRECT"
     else
-        echo -e "Return $expected_return? $?\t$INCORRECT"
+        echo -e "${grey}Return $expected_return? $?\t$INCORRECT"
     fi
 
     # Check the stdout by comparing directly with correct_content
     if [ "$program_output" == "$correct_content" ]; then
-        echo -e "STDOUT\t\t$CORRECT"
+        echo -e "${grey}STDOUT\t\t$CORRECT"
     else
         echo -e "STDOUT\t\t$INCORRECT"
-        echo "${bold}Program output:${reset}"
+        echo "${bold}${red}Program output:${reset}"
         echo -e "${grey}$program_output${reset}"
-        echo "${bold}Correct output:${reset}"
+        echo "${bold}${green}Correct output:${reset}"
         echo -e "${grey}$correct_content${reset}"
     fi
     # Remove FIFO
     rm "$fifo"
+    echo ""
     sleep 1
 }
 
