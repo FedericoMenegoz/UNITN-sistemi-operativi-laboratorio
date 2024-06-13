@@ -13,7 +13,7 @@ $(TARGETS): %: %.c
 
 clean:
 	@echo "Removing $(TARGETS)" 
-	@rm $(TARGETS)
+	@rm $(TARGETS) 2>/dev/null || echo "Nothing to do."
 
 
 .PHONY: clean ALL
