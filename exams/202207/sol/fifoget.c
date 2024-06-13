@@ -44,6 +44,7 @@ int main(int argc, char * argv[]) {
         }
         printf("%c\n", c);
     }
+
     close(fd);
     return COMPLETE;
 
